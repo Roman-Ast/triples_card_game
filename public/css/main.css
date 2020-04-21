@@ -1,0 +1,77 @@
+@media only screen and (max-width: 990px) {
+    #mainFrame{
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 0 5px 0;
+    }
+    #otherPlayers{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        width: 80%;
+        min-height: 25%;
+        border: 1px solid #ccc;
+    }
+    #cashBox{
+        min-height: 39%;
+        border: 1px solid #ccc;
+        width: 80%;
+    }
+    #myInterface{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 80%;
+        min-height: 32%;
+        border: 1px solid #ccc;
+    }
+    #buttons{
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        max-height: 30%;
+    }
+    #userData{
+        display: flex;
+        flex-direction: column;
+        max-width: 30%;
+    }
+    #bet{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        max-width: 30%;
+        height: 100%;
+    }
+    #dangerZone{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        max-width: 30%;
+        height: 100%;
+    }
+    #myCards{
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-around;
+        align-items: center;
+        min-height: 50%;
+    }
+    .card{
+        width: 30%;
+        border: 1px solid #333;
+        background-color: #ccc;
+        height: 100%;
+    }
+}
