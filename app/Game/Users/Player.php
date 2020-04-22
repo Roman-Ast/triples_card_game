@@ -12,7 +12,7 @@ class Player
     private $conn;
     private $name;
     private $cards_on_hand = [];
-    private $money_on_hand;
+    private $balance;
     private $radiness = false;
 
     public function __construct(ConnectionInterface $conn)
@@ -20,9 +20,15 @@ class Player
         $this->conn = $conn;
     }
 
+    public function makeDefaultBet(int $defaultBet)
+    {
+        $this->balance -= $defaultBet;
+        return $defaultBet;
+    }
+
     public function make_bet(int $bet)
     {
-
+        
     }
 
     public function save()
@@ -65,19 +71,29 @@ class Player
         return $this->name;
     }
 
-    public function getBill()
+    public function getBalance()
     {
-        return $this->money_on_hand;
+        return $this->balance;
     }
 
     public function setName(string $name)
     {
         $this->name = $name;
+        //var_dump($this->name);
     }
 
-    public function setBill(int $money)
+    public function setId(int $id)
     {
-        $this->money_on_hand = $money;
+        $this->id = $id;
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+    public function setBalance(int $balance)
+    {
+        $this->balance = $balance;
     }
 
 }

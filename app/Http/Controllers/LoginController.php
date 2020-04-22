@@ -17,7 +17,7 @@ class LoginController extends Controller
         $user = User::where('email', $request->email)->first();
         
         if ($user && $user->password == $request->password) {
-            return redirect()->route("game", [$user]);
+            return redirect()->route("game", [$user])->with("message", "authIsValid");
         } else {
             return back()
                 ->with("message", "Вы ввели неправильные email и/или пароль...")

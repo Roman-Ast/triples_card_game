@@ -15,7 +15,7 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|min:3',
+            'name' => 'required|min:3|unique:App\User,name',
             'email' => 'required|email:rfc,dns|unique:App\User,email',
             'password' => 'required|min:7',
             'password_confirmation' => 'same:password'

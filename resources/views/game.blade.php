@@ -9,16 +9,7 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     </head>
     <body>
-        @if (Session::has('message'))
-
-            <div class="alert {{ Session::get('class') }}" style="align-text:center;">
-                <div style="display:flex;justify-content:flex-end;" class="close-flash">
-                    &times;
-                </div>
-                {{ Session::get('message') }}
-            </div>
         
-        @endif 
         <div id="mainFrame">
             <div id="otherPlayers">
 
@@ -27,6 +18,7 @@
 
             </div>
             <div id="myInterface">
+                <div id="playerId" style="display:none;">{{ intval($user->id) }}</div>
                 <div id="userData">
                     <div id="playerName">{{ $user->name }}</div>
                     <div>Ваш баланс:</div>
@@ -62,8 +54,8 @@
 
 
 
-
+        <script src="{{ URL::asset('js/jquery_min.js') }}"></script>
         <script src="{{ URL::asset('js/game.js') }}"></script>
-        <script src="{{ URL::asset('js/jquery.js') }}"></script>
+        
     </body>
 </html>

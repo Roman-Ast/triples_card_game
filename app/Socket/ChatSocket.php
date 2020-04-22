@@ -39,12 +39,14 @@ class ChatSocket extends BaseSocket
             if ($player_data['readyToPlay']) {
                 foreach (Game::getAllPlayers() as $player) {
                     if ($player->getConnection() == $player_sender) {
-                        $player->readyToPlay();
+                        $player->setId($player_data["id"]);
                         $player->setName($player_data["name"]);
-                        $player->setBill($player_data["money"]);
+                        $player->setBalance($player_data["balance"]);
+                        $player->readyToPlay();
                     }
                 }
             }
+            var_dump(Game::getAllPlayers());
             if (Game::areAllPlayersReady()) {
                 foreach (Game::getAllPlayers() as $player) {
                     $cardsRaw = $player->getCardsOnHand();
@@ -59,7 +61,9 @@ class ChatSocket extends BaseSocket
                     $objToSend = [
                         "cards" => $cardsNormalizedForUser,
                         "name" =>$player->getName(),
-                        "bill" =>$player->getBill()
+                        "balance" =>$player->getBalance(),
+                        "allPlayers" => Game::getAllPlayersNormalizedForGame(),
+                        "defaultBets" => Game::getRounds()[Game::getCurrentRound()]->getRoundDefaultBets()
                     ];
                     $player->getConnection()->send(json_encode($objToSend));
                 }

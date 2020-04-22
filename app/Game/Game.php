@@ -11,7 +11,7 @@ class Game
     private static $rounds = [];
     private static $connectAbility = true;
     private static $allPlayersReady = false;
-    private static $roundCount = 1;
+    private static $currentRound = 0;
 
     public static function addPlayer(Player $player)
     {
@@ -24,6 +24,7 @@ class Game
     }
     public static function getAllPlayers()
     {
+        //var_dump(self::$players);
         return self::$players;
     }
 
@@ -31,9 +32,11 @@ class Game
     {
         if (self::checkPlayersReady()) {       
             self::$connectAbility = false;
-            $round = new Round();
-            self::$rounds[] = $round;
+            self::$currentRound += 1;
+            $round = new Round(self::$currentRound);
+            self::$rounds[self::$currentRound] = $round;
             self::$allPlayersReady = true;
+            
             $round->start();
         }
     }
@@ -51,5 +54,26 @@ class Game
     public static function checkConnectAbility()
     {
         return self::$connectAbility;
+    }
+
+    public static function getAllPlayersNormalizedForGame()
+    {
+        foreach (self::$players as $player) {
+            $normalizedPlayers[] = [
+                'name' => $player->getName(),
+                'balance' => $player->getBalance()
+            ];
+        }
+        return $normalizedPlayers;
+    }
+
+    public static function getCurrentRound()
+    {
+        return self::$currentRound;
+    }
+
+    public static function getRounds()
+    {
+        return self::$rounds;
     }
 }
