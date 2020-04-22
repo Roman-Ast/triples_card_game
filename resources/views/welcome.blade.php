@@ -1,53 +1,22 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Тринька</title>
-        <link rel="stylesheet" href="{{ URL::asset('css/main.css') }}">
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    </head>
-    <body>
-        <div id="mainFrame">
-            <div id="otherPlayers">
-
-            </div>
-            <div id="cashBox">
-
-            </div>
-            <div id="myInterface">
-                <div id="buttons">
-                    <div id="userData">
-                        <input type="text" id="myName" name="name" placeholder="ваше имя" class="form-control">
-                        <input class="form-control" type="number" id="myMoney" placeholder="капитал" max="500" min="10" step="10">
-                        <button id="startPlay" >Готов</button>
-                    </div>
-                    <div id="bet">
-                        <input type="number" name="bet" placeholder="ваша ставка" class="form-control">
-                        <button id="makeBet" class="btn btn-sm btn-success">Поставить</button>
-                    </div>
-                    
-                    <div id="dangerZone">
-                        <button id="save" class="btn btn-sm btn-warning">Пасс</button>
-                        <button id="leaveGame" class="btn btn-sm btn-danger">Покинуть игру</button>
-                    </div>
-                </div>
-                <div id="myCards">
-
-                </div>
-                <div id="myPoints">
-
-                </div>
-            </div>
-        </div>
-
-
-
-
-
-
-
-        <script src="{{ URL::asset('js/main.js') }}"></script>
-        <script src="{{ URL::asset('js/jquery_min.js') }}"></script>
-    </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Приветствие</title>
+    <link rel="stylesheet" href="{{ URL::asset('css/main.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    
+</head>
+<body>
+    
+    <div id="greeting">
+        <h2>Вас приветствует карточная игра "Тринька"</h2>
+    </div>
+    <div id="reglog">
+        <a href="/login">Войти</a>
+        <a href="/register">Регистрация</a>
+    </div>
+</body>
 </html>

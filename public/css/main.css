@@ -19,18 +19,35 @@
         border: 1px solid #ccc;
     }
     #cashBox{
-        min-height: 39%;
+        min-height: 35%;
         border: 1px solid #ccc;
         width: 80%;
     }
     #myInterface{
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
         width: 80%;
-        min-height: 32%;
+        min-height: 45%;
         border: 1px solid #ccc;
+    }
+    #userData{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: baseline;
+        width: 100%;
+        height: 10%;
+    }
+    #controllers{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        width: 95%;
+        height: 90%;
+        padding-top:10px ;
     }
     #buttons{
         display: flex;
@@ -38,13 +55,8 @@
         justify-content: space-between;
         align-items: center;
         width: 100%;
-        max-height: 30%;
     }
-    #userData{
-        display: flex;
-        flex-direction: column;
-        max-width: 30%;
-    }
+    
     #bet{
         display: flex;
         flex-direction: column;
@@ -66,12 +78,31 @@
         flex-wrap: nowrap;
         justify-content: space-around;
         align-items: center;
-        min-height: 50%;
+        min-height: 60%;
+        border: 1px solid #ccc;
+        
     }
     .card{
         width: 30%;
         border: 1px solid #333;
         background-color: #ccc;
         height: 100%;
+    }
+    
+    #greeting{
+        width: 70%;
+        margin: 15% auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    #reglog{
+        width: 70%;
+        margin: 100px auto;
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-evenly;
+        align-items: center;
     }
 }

@@ -2,8 +2,8 @@ const startPlayBtn = document.querySelector("#startPlay");
 
 startPlayBtn.onclick = () => {
     const playerData = {
-        name: document.querySelector("#myName").value,
-        money: document.querySelector("#myMoney").value,
+        name: document.querySelector("#playerName").innerHTML,
+        money: document.querySelector("#playerBalance").innerHTML,
         readyToPlay: true
     };
     conn.send(JSON.stringify(playerData));
