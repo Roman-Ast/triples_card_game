@@ -9,7 +9,13 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     </head>
     <body>
-        
+        <div id="modal">
+            <div id="modalHeader">Детали раунда</div>
+            <div id="modalBody"></div>
+            <div id="modalButtons">
+                <button class="btn btn-sm btn-secondary" id="modalClose">Ок</button>
+            </div>
+        </div>
         <div id="mainFrame">
             <div id="otherPlayers">
 
@@ -30,10 +36,10 @@
                             <button id="startPlay" class="btn btn-sm btn-primary">Готов</button>
                         </div>
                         <div id="bet">
-                            <input type="number" name="bet" placeholder="ваша ставка" class="form-control">
+                            <input type="number" name="bet" id="betSum" placeholder="ваша ставка" class="form-control">
                             <button id="makeBet" class="btn btn-sm btn-success">Поставить</button>
                         </div>
-                        
+                        <button id="openCards">Открыть карты</button>
                         <div id="dangerZone">
                             <button id="save" class="btn btn-sm btn-warning">Пасс</button>
                             <button id="leaveGame" class="btn btn-sm btn-danger">Покинуть игру</button>

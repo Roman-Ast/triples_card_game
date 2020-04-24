@@ -11,7 +11,11 @@ class Game
     private static $rounds = [];
     private static $connectAbility = true;
     private static $allPlayersReady = false;
-    private static $currentRound = 0;
+    private static $currentRoundId = 0;
+    private static $currentRound;
+    private static $currentDistributor;
+    private static $first_word_player;
+    private const DEFAULT_BET = 50;
 
     public static function addPlayer(Player $player)
     {
@@ -32,9 +36,10 @@ class Game
     {
         if (self::checkPlayersReady()) {       
             self::$connectAbility = false;
-            self::$currentRound += 1;
-            $round = new Round(self::$currentRound);
-            self::$rounds[self::$currentRound] = $round;
+            self::$currentRoundId += 1;
+            $round = new Round(self::$currentRoundId);
+            self::$currentRound = $round;
+            self::$rounds[self::$currentRoundId] = $round;
             self::$allPlayersReady = true;
             
             $round->start();
@@ -67,6 +72,11 @@ class Game
         return $normalizedPlayers;
     }
 
+    public static function getCurrentRoundId()
+    {
+        return self::$currentRoundId;
+    }
+
     public static function getCurrentRound()
     {
         return self::$currentRound;
@@ -75,5 +85,36 @@ class Game
     public static function getRounds()
     {
         return self::$rounds;
+    }
+    
+    public static function getCurrentDistributor()
+    {
+        return self::$currentDistributor;
+    }
+
+    public static function setCurrentDistributor(Player $distributor)
+    {
+        self::$currentDistributor = $distributor;
+    }
+
+    public static function getCurrentFirstWordPlayer()
+    {
+        return self::$first_word_player;
+    }
+
+    public static function setCurrentFirstWordPlayer(Player $first_word_player)
+    {
+        self::$first_word_player = $first_word_player;
+    }
+
+    public static function getDefaultBet()
+    {
+        return self::DEFAULT_BET;
+    }
+
+    public static function currentRoundMakeBet(int $bet, string $betMaker, Player $player)
+    {
+        self::$currentRound->makeBet($player, $bet);
+        self::$currentRound->addBetToCashBox($bet, $betMaker);
     }
 }

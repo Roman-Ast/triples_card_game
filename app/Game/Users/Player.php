@@ -14,6 +14,7 @@ class Player
     private $cards_on_hand = [];
     private $balance;
     private $radiness = false;
+    private $distributor = false;
 
     public function __construct(ConnectionInterface $conn)
     {
@@ -26,9 +27,9 @@ class Player
         return $defaultBet;
     }
 
-    public function make_bet(int $bet)
+    public function makeBet(int $bet)
     {
-        
+        Game::currentRoundMakeBet($bet, $this->name, $this);
     }
 
     public function save()
@@ -91,9 +92,15 @@ class Player
     {
         return $this->id;
     }
+
     public function setBalance(int $balance)
     {
         $this->balance = $balance;
+    }
+
+    public function isDistributor()
+    {
+        
     }
 
 }
