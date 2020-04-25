@@ -1,6 +1,16 @@
 const conn = new WebSocket('ws://localhost:8050');
 conn.onopen = (e) => console.log("Соединение установлено...!");
 
+$("#betSum").on('input', function () {
+    if ($(this).val() % 5 !== 0) {
+         $(this).css({'border': '1px solid red'});
+         $("#makeBet").attr('disabled', true);
+    } else {
+         $(this).css({'border': '#ccc'});
+         $("#makeBet").removeAttr('disabled');
+    }
+});
+
 $("#startPlay").on('click', () => {
     const playerData = {
         id: document.querySelector("#playerId").innerHTML,
@@ -28,6 +38,14 @@ $("#save").on('click', () => {
     };
     conn.send(JSON.stringify(betData));
 });
+
+$("#takeCashBox").on('click', () => {
+    const endRound = {
+        endRoundWithoutShowingUp: true,
+    };
+    conn.send(JSON.stringify(betData));
+});
+
 
 conn.onmessage = (e) => {
     const msgObject = JSON.parse(e.data);
@@ -126,17 +144,26 @@ conn.onmessage = (e) => {
             betContainer.appendChild(defaultBetContainer);
             cashBox.appendChild(betContainer);
         });
+
     } else if (msgObject.roundStateAfterBetting) {
+        
         if (msgObject.playerOpenCardAbility) {
             if ($("#playerName").html() === msgObject.playerOpenCardAbility) {
                 //показываем кнопку "вскрыть карты"
                 $("#openCards").css({"display": "block"});
             }
+        } else if (msgObject.playerTakingConWithoutShowingUp) {
+            if ($("#playerName").html() === msgObject.playerTakingConWithoutShowingUp) {
+                //показываем кнопку "забрать кон"
+                $("#takeCashBox").css({"display": "block"});
+            }
         }
+
+        const lastBet = msgObject.lastBet;
+
         console.dir(msgObject);
 
         if (msgObject.nextStepPlayer !== $("#playerName").html()) {
-            console.log(msgObject.nextStepPlayer + ' | ' + $("#playerName").html());
             $("#save").attr('disabled', true);
             $("#makeBet").attr('disabled', true);
             $("#leaveGame").attr('disabled', true);
@@ -144,6 +171,15 @@ conn.onmessage = (e) => {
             $("#save").removeAttr('disabled');
             $("#makeBet").removeAttr('disabled');
             $("#leaveGame").removeAttr('disabled');
+            $("#betSum").on('input', function () {
+                if ($(this).val() < lastBet || $(this).val() % 5 !== 0) {
+                     $(this).css({'border': '1px solid red'});
+                     $("#makeBet").attr('disabled', true);
+                } else {
+                     $(this).css({'border': '#ccc'});
+                     $("#makeBet").removeAttr('disabled');
+                }
+            });
         }
     }
     

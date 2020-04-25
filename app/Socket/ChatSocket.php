@@ -90,12 +90,17 @@ class ChatSocket extends BaseSocket
                 "roundStateAfterBetting" => true,
                 "currentStepPlayer" => Game::getCurrentRound()->getCurrentStepPlayer()->getName(),
                 "nextStepPlayer" => Game::getCurrentRound()->getNextStepPlayer()->getName(),
-                "playerOpenCardAbility" => Game::getCurrentRound()->getPlayerOpenCardAbility()
+                "playerOpenCardAbility" => Game::getCurrentRound()->getPlayerOpenCardAbility(),
+                "lastBet" => Game::getCurrentRound()->getLastBet(),
+                "playerTakingConWithoutShowingUp" => Game::getCurrentRound()->getPlayerTakingConWithoutShowingUp(),
+                "roundCashBox" => Game::getCurrentRound()->getRoundCashBox()
             ];
 
             foreach ($this->clients as $client) {
                 $client->send(json_encode($dataAboutRoundState));
             }
+        } elseif ($player_data['endRoundWithoutShowingUp']) {
+            Game::endRoundWithoutShowingUp();
         }
         
         

@@ -122,6 +122,9 @@
     #openCards{
         display: none;
     }
+    #takeCashBox{
+        display: none;
+    }
     #myCards{
         width: 100%;
         display: flex;

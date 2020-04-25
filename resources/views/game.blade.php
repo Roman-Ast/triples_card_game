@@ -39,7 +39,8 @@
                             <input type="number" name="bet" id="betSum" placeholder="ваша ставка" class="form-control">
                             <button id="makeBet" class="btn btn-sm btn-success">Поставить</button>
                         </div>
-                        <button id="openCards">Открыть карты</button>
+                        <button id="openCards" class="btn btn-sm btn-primary">Открыть карты</button>
+                        <button id="takeCashBox" class="btn btn-sm btn-success">Забрать кон</button>
                         <div id="dangerZone">
                             <button id="save" class="btn btn-sm btn-warning">Пасс</button>
                             <button id="leaveGame" class="btn btn-sm btn-danger">Покинуть игру</button>

@@ -117,4 +117,9 @@ class Game
         self::$currentRound->makeBet($player, $bet);
         self::$currentRound->addBetToCashBox($bet, $betMaker);
     }
+
+    public static function endRoundWithoutShowingUp()
+    {
+        self::$currentRound->endRound();
+    }
 }

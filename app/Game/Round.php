@@ -10,16 +10,18 @@ class Round
 {
     private $id;
     private const DEFAULT_BET = 50;
-    private $summ_of_default_bets = [];
-    private $summ_of_all_bets = [];
+    private $summOfDefaultBets = [];
     private $distributor;
     private $first_word_right;
     private $cashBox;
+    private $totalCashBoxSumm;
     private $currentStepPlayer;
     private $nextStepPlayer;
     private $roundParameters = [];
     private $lastBet = 0;
     private $playerOpenCardAbility;
+    private $playerTakingConWithoutShowingUp;
+    private $winner;
 
     public function __construct(int $currentRound)
     {
@@ -37,16 +39,20 @@ class Round
     private function takeDefaultBet()
     {
         foreach (Game::getAllPlayers() as $player) {
-            $this->summ_of_default_bets[] = [
+            $this->summOfDefaultBets[] = [
                 "betMaker" => $player->getName(),
                 "defaultBet" => $player->makeDefaultBet(self::DEFAULT_BET)
             ];
+        }
+
+        foreach ($this->summOfDefaultBets as $item) {
+            $this->totalCashBoxSumm += $item['defaultBet'];
         }
     }
 
     public function getRoundDefaultBets()
     {
-        return $this->summ_of_default_bets;
+        return $this->summOfDefaultBets;
     }
 
     public function setDistributor()
@@ -92,8 +98,10 @@ class Round
     public function addBetToCashBox(int $bet, string $betMaker)
     {
         $this->cashBox[$betMaker] = $bet;
+        $this->totalCashBoxSumm += $bet;
+        var_dump($this->totalCashBoxSumm);
     }
-
+    
     public function getRoundCashBox()
     {
         return $this->cashBox;
@@ -129,30 +137,32 @@ class Round
         //обновление параметров раунда и текущего состояния
         
         if ($bet > $this->lastBet) {
-            foreach ($this->roundParameters as $playerId => $state) {
-                if ($playerSteping->getConnResourceId() == $playerId) {
-                    $this->roundParameters[$playerId] = 'raise';
+            foreach ($this->roundParameters as $index => $player) {
+                if ($playerSteping->getConnResourceId() == $player['resourceId']) {
+                    $this->roundParameters[$index]['state'] = 'raise';
                 }
             }
         } else if ($bet === $this->lastBet) {
-            foreach ($this->roundParameters as $playerId => $state) {
-                if ($playerSteping->getConnResourceId() == $playerId) {
-                    $this->roundParameters[$playerId] = 'collate';
+            foreach ($this->roundParameters as $index => $player) {
+                if ($playerSteping->getConnResourceId() == $player['resourceId']) {
+                    $this->roundParameters[$index]['state'] = 'collate';
                 }
             }
-        } else if ($bet < $this->lastBet) {
-            foreach ($this->roundParameters as $playerId => $state) {
-                if ($playerSteping->getConnResourceId() == $playerId) {
-                    $this->roundParameters[$playerId] = 'save';
+        } else {
+            foreach ($this->roundParameters as $index => $player) {
+                if ($playerSteping->getConnResourceId() == $player['resourceId']) {
+                    $this->roundParameters[$index]['state'] = 'save';
                 }
             }
         }
-        $this->lastBet = $bet;
-        //var_dump($this->roundParameters);
+        if ($bet > 0) {
+            $this->lastBet = $bet;
+        }
+        
         $playerOpenCardAbility = $this->checkRoundParameters();
 
         if ($playerOpenCardAbility) {
-            foreach (Game::getPlayers() as $key => $player) {
+            foreach (Game::getAllPlayers() as $key => $player) {
                 if ($player->getConnResourceId() == $playerOpenCardAbility) {
                     $this->playerOpenCardAbility = $player;
                 }
@@ -163,32 +173,55 @@ class Round
     private function checkRoundParameters()
     {
         //проверяем, все ли сходили
-        foreach ($this->roundParameters as $playerConnResourceId => $state) {
-            if (!$state) {
+        foreach ($this->roundParameters as $index => $player) {
+            if (!$player['state']) {
                 return;
             }
         }
         //если да, то проверяем пора ли завершать раунд
         $playerOpenCardAbility = null;
-        
-        for ($i = 0; $i < count($this->roundParameters); $i++) { 
-            if ()
+        $countOfRaises = 0;
+        $countOfCollates = 0;
+
+        foreach ($this->roundParameters as $index => $player) {
+            if ($player['state'] === 'raise') {
+                $countOfRaises += 1;
+            }
         }
-        return $playerOpenCardAbility;
 
-        /*foreach ($this->roundParameters as $playerConnResourceId => $state) {
-            $normalizedForCheckingArr[] = $state;
+        foreach ($this->roundParameters as $index => $player) {
+            if ($player['state'] === 'collate') {
+                $countOfCollates += 1;
+            }
         }
 
-        foreach ($normalizedForCheckingArr as $index => $state) {
-            if ($state == 'raise') {
-                if ($normalizedForCheckingArr[$index - 1] === 'save') {
-                    $playerWithState = 'raise';
-                } else if ($normalizedForCheckingArr[$index - 1] === 'collate') {
-
+        if ($countOfRaises < 2 && $countOfCollates > 0) {
+            foreach ($this->roundParameters as $index => $player) {
+                if ($player['state'] === 'raise') {
+                    if (isset($this->roundParameters[$index - 1])) {
+                        if ($this->roundParameters[$index - 1]['state'] === 'save') {
+                            $playerOpenCardAbility = $player['resourceId'];
+                        } else if ($this->roundParameters[$index - 1]['state'] === 'collate') {
+                            $playerOpenCardAbility = $this->roundParameters[$index - 1]['resourceId'];
+                        }
+                    } else {
+                        if ($this->roundParameters[count($this->roundParameters) - 1]['state'] === 'save') {
+                            $playerOpenCardAbility = $player['resourceId'];
+                        } else if ($this->roundParameters[count($this->roundParameters) - 1]['state'] === 'collate') {
+                            $playerOpenCardAbility = $this->roundParameters[count($this->roundParameters) - 1]['resourceId'];
+                        }
+                    }
                 }
             }
-        }*/
+        } else if ($countOfRaises < 2 && $countOfCollates === 0) {
+            foreach ($this->roundParameters as $index => $player) {
+                if ($player['state'] === 'raise') {
+                    $this->playerTakingConWithoutShowingUp = $player['resourceId'];
+                }
+            }
+        }
+
+        return $playerOpenCardAbility;
     }
 
     private function setInitRoundParameters()
@@ -196,14 +229,11 @@ class Round
         $players = Game::getAllPlayers();
 
         foreach ($players as $index => $player) {
-            $this->roundParameters[$player->getConnResourceId()] = null;
+            $this->roundParameters[] = [
+                'resourceId' => $player->getConnResourceId(),
+                'state' => null
+            ];
         }
-
-        /*foreach ($this->roundParameters as $playerId => $state) {
-            if ($playerId == $this->distributor->getId()) {
-                $this->roundParameters[$player->getId()] = 'distributor';
-            }
-        }*/
     }
 
     public function getCurrentStepPlayer()
@@ -214,5 +244,22 @@ class Round
     public function getNextStepPlayer()
     {
         return $this->nextStepPlayer;
+    }
+
+    public function getLastBet()
+    {
+        return $this->lastBet;
+    }
+
+    public function getPlayerTakingConWithoutShowingUp()
+    {
+        if ($this->playerTakingConWithoutShowingUp) {
+            foreach (Game::getAllPlayers() as $player) {
+                if ($player->getConnResourceId() === $this->playerTakingConWithoutShowingUp) {
+                    return $player->getName();
+                }
+            }
+        }
+        return false;
     }
 }
