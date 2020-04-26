@@ -43,7 +43,7 @@ $("#takeCashBox").on('click', () => {
     const endRound = {
         endRoundWithoutShowingUp: true,
     };
-    conn.send(JSON.stringify(betData));
+    conn.send(JSON.stringify(endRound));
 });
 
 
@@ -160,7 +160,7 @@ conn.onmessage = (e) => {
         }
 
         const lastBet = msgObject.lastBet;
-
+        $("#playerBalance").html(msgObject.balanceOfAllPlayers[$("#playerName").html()]);
         console.dir(msgObject);
 
         if (msgObject.nextStepPlayer !== $("#playerName").html()) {
@@ -181,6 +181,20 @@ conn.onmessage = (e) => {
                 }
             });
         }
+    } else if (msgObject.isRoundEndWithoutShowingUp) {
+        alert(`победитель: ${msgObject.playerTakingConWithoutShowingUp}`);
+    } else if (msgObject.nextRound) {
+        //очищаем поле карты у игрока
+        $('#myCards').empty();
+        $('#cashBox').empty();
+        $('#modalBody').empty();
+        $('#otherPlayers').empty();
+        alert('next round');
+        $("#radiness").css({"display":"block"});
+        $("#takeCashBox").css({"display":"none"});
+        $("button").each(function () {
+           $(this).removeAttr('disabled'); 
+        });
     }
     
 

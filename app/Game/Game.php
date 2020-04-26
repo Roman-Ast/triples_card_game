@@ -28,7 +28,6 @@ class Game
     }
     public static function getAllPlayers()
     {
-        //var_dump(self::$players);
         return self::$players;
     }
 
@@ -120,6 +119,37 @@ class Game
 
     public static function endRoundWithoutShowingUp()
     {
-        self::$currentRound->endRound();
+        self::$currentRound->endRoundWithoutShowingUp();
+    }
+
+    public static function getBalanceOfAllPlayers()
+    {
+        foreach (self::$players as $player) {
+            $balanceOfAllPlayers[$player->getName()] = $player->getBalance();
+        }
+
+        return $balanceOfAllPlayers;
+    }
+
+    public static function endCurrentRound()
+    {
+        self::$connectAbility = true;
+        self::$allPlayersReady = false;
+
+        foreach (self::$players as $player) {
+            $player->changeRadinessAfterEndingRound();
+            $player->dropCards();
+        }
+    }
+
+    public static function getAllPlayersIdsNormalizedForGame()
+    {
+        foreach (self::$players as $player) {
+            $normalizedPlayers[] = [
+                'id' => $player->getid(),
+                'balance' => $player->getBalance()
+            ];
+        }
+        return $normalizedPlayers;
     }
 }

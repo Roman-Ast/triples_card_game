@@ -29,7 +29,14 @@ class Player
 
     public function makeBet(int $bet)
     {
-        Game::currentRoundMakeBet($bet, $this->name, $this);
+        if ($this->balance - $bet < 0) {
+            return 'false';
+        }
+        
+        $this->balance -= $bet;
+        Game::getCurrentRound()->takeBet($this, $bet);
+
+        return 'Ok';
     }
 
     public function save()
@@ -41,6 +48,11 @@ class Player
     {
         $this->radiness = true;
         Game::SayReadyToGame();
+    }
+
+    public function changeRadinessAfterEndingRound()
+    {
+        $this->radiness = false;
     }
 
     public function getRadiness()
@@ -80,7 +92,6 @@ class Player
     public function setName(string $name)
     {
         $this->name = $name;
-        //var_dump($this->name);
     }
 
     public function setId(int $id)
@@ -98,9 +109,9 @@ class Player
         $this->balance = $balance;
     }
 
-    public function isDistributor()
+    public function dropCards()
     {
-        
+        $this->cards_on_hand = [];
     }
 
 }

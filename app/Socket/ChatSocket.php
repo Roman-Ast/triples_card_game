@@ -33,10 +33,10 @@ class ChatSocket extends BaseSocket
     public function onMessage(ConnectionInterface $player_sender, $msg)
     {
         $player_data = json_decode($msg, true);
-
+        
         if (Game::checkConnectAbility()) {
                 
-            if ($player_data['readyToPlay']) {
+            if (isset($player_data['readyToPlay']) && $player_data['readyToPlay']) {
                 foreach (Game::getAllPlayers() as $player) {
                     if ($player->getConnection() == $player_sender) {
                         $player->setId($player_data["id"]);
@@ -46,7 +46,7 @@ class ChatSocket extends BaseSocket
                     }
                 }
             }
-            //var_dump(Game::getAllPlayers());
+            
             if (Game::areAllPlayersReady()) {
                 foreach (Game::getAllPlayers() as $player) {
                     $cardsRaw = $player->getCardsOnHand();
@@ -65,20 +65,21 @@ class ChatSocket extends BaseSocket
                         "name" =>$player->getName(),
                         "balance" =>$player->getBalance(),
                         "allPlayers" => Game::getAllPlayersNormalizedForGame(),
-                        "defaultBets" => Game::getRounds()[Game::getCurrentRoundId()]->getRoundDefaultBets(),
+                        "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
+                        "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
                         "currentDistributor" => Game::getCurrentDistributor()->getName(),
                         "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
                         "currentRoundId" => Game::getCurrentRoundId(),
-                        "defaultBet" => Game::getDefaultBet()
+                        "defaultBet" => Game::getDefaultBet(),
+                        
                     ];
                     $player->getConnection()->send(json_encode($dataForRoundStarting));
                 }
             }
             
-        } else if (isset($player_data['readyToPlay']) && $player_data['readyToPlay'] && !$player_data['makingBet']) {
-            $error = ["alreadyRunningGame" => "Раунд уже начался, подождите пока раунд не закончится..."];
-            $player_sender->send(json_encode($error));
-        } elseif ($player_data['makingBet']) {
+        } 
+        
+        if (isset($player_data['makingBet']) && $player_data['makingBet']) {
             
             foreach (Game::getAllPlayers() as $player) {
                 if ($player->getConnection() == $player_sender) {
@@ -86,21 +87,38 @@ class ChatSocket extends BaseSocket
                 }
             }
 
+            $currentRound = Game::getCurrentRound();
+
             $dataAboutRoundState = [
                 "roundStateAfterBetting" => true,
-                "currentStepPlayer" => Game::getCurrentRound()->getCurrentStepPlayer()->getName(),
-                "nextStepPlayer" => Game::getCurrentRound()->getNextStepPlayer()->getName(),
-                "playerOpenCardAbility" => Game::getCurrentRound()->getPlayerOpenCardAbility(),
-                "lastBet" => Game::getCurrentRound()->getLastBet(),
-                "playerTakingConWithoutShowingUp" => Game::getCurrentRound()->getPlayerTakingConWithoutShowingUp(),
-                "roundCashBox" => Game::getCurrentRound()->getRoundCashBox()
+                "currentStepPlayer" => $currentRound->getCurrentStepPlayer()->getName(),
+                "nextStepPlayer" => $currentRound->getNextStepPlayer()->getName(),
+                "playerOpenCardAbility" => $currentRound->getPlayerOpenCardAbility(),
+                "lastBet" => $currentRound->getLastBet(),
+                "playerTakingConWithoutShowingUp" => $currentRound->getPlayerTakingConWithoutShowingUp(),
+                "roundCashBox" => $currentRound->getRoundCashBox(),
+                "isRoundEndWithoutShowingUp" => $currentRound->isRoundEndWithoutShowingUp(),
+                "balanceOfAllPlayers" => Game::getBalanceOfAllPlayers(),
+                "defaultBet" => Game::getDefaultBet(),
+                "bets" => $currentRound->getRoundBets(),
+                "winner" =>$currentRound->getWinner()
             ];
 
             foreach ($this->clients as $client) {
                 $client->send(json_encode($dataAboutRoundState));
             }
-        } elseif ($player_data['endRoundWithoutShowingUp']) {
+        } elseif (isset($player_data['endRoundWithoutShowingUp']) && $player_data['endRoundWithoutShowingUp']) {
+            
             Game::endRoundWithoutShowingUp();
+
+            $dataAfterEndingRoundWithoutShowingUp = [
+                "nextRound" => true,
+                "winner" => Game::getCurrentRound()->getWinner()->getName()
+            ];
+            
+            foreach ($this->clients as $client) {
+                $client->send(json_encode($dataAfterEndingRoundWithoutShowingUp));
+            }
         }
         
         
@@ -121,11 +139,6 @@ class ChatSocket extends BaseSocket
         echo $e->getTraceAsString();
 
         $conn->close();
-    }
-
-    public static function getAllPlayers()
-    {
-        return $this->clients;
     }
 }
 
