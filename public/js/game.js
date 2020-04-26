@@ -1,4 +1,4 @@
-const conn = new WebSocket('ws://localhost:8050');
+const conn = new WebSocket('ws://192.168.0.107:8050');
 conn.onopen = (e) => console.log("Соединение установлено...!");
 
 $("#betSum").on('input', function () {
