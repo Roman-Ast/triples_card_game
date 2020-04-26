@@ -17,11 +17,10 @@
             </div>
         </div>
         <div id="mainFrame">
-            <div id="otherPlayers">
-
-            </div>
-            <div id="cashBox">
-
+            <div id="room">
+                <div id="table">
+                    
+                </div>
             </div>
             <div id="myInterface">
                 <div id="playerId" style="display:none;">{{ intval($user->id) }}</div>
@@ -43,15 +42,11 @@
                         <button id="takeCashBox" class="btn btn-sm btn-success">Забрать кон</button>
                         <div id="dangerZone">
                             <button id="save" class="btn btn-sm btn-warning">Пасс</button>
-                            <button id="leaveGame" class="btn btn-sm btn-danger">Покинуть игру</button>
                         </div>
                     </div>
-                    <div id="myCards">
+                </div>
+                <div id="myCards">
     
-                    </div>
-                    <div id="myPoints">
-    
-                    </div>
                 </div>
             </div>
         </div>

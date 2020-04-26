@@ -93,7 +93,18 @@ conn.onmessage = (e) => {
         $("#modalClose").on("click", function () {
         $("#modal").hide(1000); 
         });
-                
+        
+        //смещаем модальное окно на половину вправо и вниз
+        const roomHeight = $("#room").height();
+        const modalHeight = $("#modal").height();
+        const roomWidth = $("#room").width();
+        const modalWidth = $("#modal").width();
+
+        $("#modal")
+            .css({"left": `calc(${roomWidth / 2 - modalWidth / 2}px)`})
+            .css({"top": `calc(${roomHeight / 2 - modalHeight / 2}px)`});
+
+
         if (msgObject.name !== currentFirstWordPlayer) {
             $("#makeBet").attr("disabled", true);
         }
@@ -101,26 +112,72 @@ conn.onmessage = (e) => {
         document.querySelector("#playerBalance").innerHTML = balance;
 
         //заполняем поле "другие игроки" текущего игрока
-        allPlayers.forEach(player => {
-            if (player.name != msgObject.name) {
-                
-                const playerContainer = document.createElement("div");
-                if (player.name === currentDistributor) {
-                    playerContainer.classList.add('distributor');
+        if (allPlayers.length == 3) {
+
+            allPlayers.forEach((element, index, array) => {
+                if (index === 0) {
+                    const playerContainer = document.createElement("div");
+                    playerContainer.classList.add("playerContainer");
+                    const imgContainer = document.createElement("div");
+                    const playerDataContainer = document.createElement("div");
+                    const img = new Image(24, 24);
+                    img.src = 'https://img.icons8.com/wired/2x/circled-user.png';
+                    imgContainer.appendChild(img); 
+                    playerContainer.appendChild(imgContainer);
+                    playerContainer.appendChild(playerDataContainer);
+                    playerDataContainer.append(element.name);
+                    playerContainer.appendChild(playerDataContainer);
+                    $("#room").append(playerContainer);
+
+                    const roomHeight = $("#room").height();
+                    const playerContainerHeight = $(playerContainer).height();
+                    
+                    $(playerContainer)
+                        .css({"transform": `translateY(calc(${roomHeight / 2 - playerContainerHeight / 2}px))`});
+                        
+                } else if (index === 1) {
+                    const playerContainer = document.createElement("div");
+                    playerContainer.classList.add("playerContainer");
+                    const imgContainer = document.createElement("div");
+                    const playerDataContainer = document.createElement("div");
+                    const img = new Image(24, 24);
+                    img.src = 'https://img.icons8.com/wired/2x/circled-user.png';
+                    imgContainer.appendChild(img); 
+                    playerContainer.appendChild(imgContainer);
+                    playerContainer.appendChild(playerDataContainer);
+                    playerDataContainer.append(element.name);
+                    playerContainer.appendChild(playerDataContainer);
+                    $("#room").append(playerContainer);
+
+                    const roomWidth = $("#room").width();
+                    const playerContainerWidth = $(playerContainer).width();
+                    
+                    $(playerContainer)
+                        .css({"transform": `translateX(calc(${roomWidth / 2 - playerContainerWidth / 2}px))`});
+                        
+                } else {
+                    const playerContainer = document.createElement("div");
+                    playerContainer.classList.add("playerContainer");
+                    const imgContainer = document.createElement("div");
+                    const playerDataContainer = document.createElement("div");
+                    const img = new Image(24, 24);
+                    img.src = 'https://img.icons8.com/wired/2x/circled-user.png';
+                    imgContainer.appendChild(img); 
+                    playerContainer.appendChild(imgContainer);
+                    playerContainer.appendChild(playerDataContainer);
+                    playerDataContainer.append(element.name);
+                    playerContainer.appendChild(playerDataContainer);
+                    $("#room").append(playerContainer);
+                    
+                    const roomHeight = $("#room").height();
+                    const playerContainerHeight = $(playerContainer).height();
+                    
+                    $(playerContainer)
+                        .css({'right': 0})
+                        .css({"transform": `translateY(calc(${roomHeight / 2 - playerContainerHeight / 2}px))`});
                 }
-                const playerDataContainer = document.createElement("div");
-                playerDataContainer.innerHTML = `${player.name} ${player.balance}`;
-                playerContainer.classList.add("otherPlayer");
-                const otherPlayersContainer = document.querySelector("#otherPlayers");
-                const imgContainer = document.createElement("div");
-                const img = new Image(24, 24);
-                img.src = 'https://img.icons8.com/wired/2x/circled-user.png';
-                imgContainer.appendChild(img); 
-                playerContainer.appendChild(imgContainer);
-                playerContainer.appendChild(playerDataContainer);
-                otherPlayersContainer.appendChild(playerContainer);
-            }
-        });
+            });
+        }
 
         //отмечаем раздававшего
         if (msgObject.name === currentDistributor) {
@@ -140,7 +197,7 @@ conn.onmessage = (e) => {
         const defaultBets = msgObject.defaultBets;
         const cashBox = document.querySelector("#cashBox");
 
-        defaultBets.forEach(item => {
+        /*defaultBets.forEach(item => {
             const betContainer = document.createElement("div");
             betContainer.classList.add("bet");
             const betMakerContainer = document.createElement("div");
@@ -150,7 +207,7 @@ conn.onmessage = (e) => {
             betContainer.appendChild(betMakerContainer);
             betContainer.appendChild(defaultBetContainer);
             cashBox.appendChild(betContainer);
-        });
+        });*/
 
     } else if (msgObject.roundStateAfterBetting) {
         
