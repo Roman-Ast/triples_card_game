@@ -15,6 +15,7 @@ class Player
     private $balance;
     private $radiness = false;
     private $distributor = false;
+    private $cardsValueAfterOpening = 0;
 
     public function __construct(ConnectionInterface $conn)
     {
@@ -107,6 +108,16 @@ class Player
     public function setBalance(int $balance)
     {
         $this->balance = $balance;
+    }
+
+    public function getCardsValueAfterOpening()
+    {
+        return $this->cardsValueAfterOpening;
+    }
+
+    public function setCardsValueAfterOpening(int $cardsValue)
+    {
+        $this->cardsValueAfterOpening = $cardsValue;
     }
 
     public function dropCards()

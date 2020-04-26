@@ -36,4 +36,31 @@ class Card
     {
         return $this->suit;
     }
+
+    public function becomeSuitable(array $cards) {
+        foreach ($cards as $index => $card) {
+            if ($card->getName() == 'Семь' && $card->getSuit() == 'Пики') {
+                unset($cards[$index]);
+            }
+        }
+        $cards = array_slice($cards, 0);
+        if ($cards[0]->getName() === $cards[1]->getName()) {
+            array_push(
+                $cards, 
+                new Card(21, $cards[0]->getName(), $cards[0]->getSuit(), $cards[0]->getValue())
+            );
+        } else if ($cards[0]->getSuit() === $cards[1]->getSuit()) {
+            array_push(
+                $cards, 
+                new Card(21, "Туз", $cards[0]->getSuit(), 11)
+            );
+        } else {
+            array_push(
+                $cards, 
+                new Card(21, "Туз", $cards[0]->getSuit(), 11)
+            );
+        }
+
+        return $cards;
+    }
 }

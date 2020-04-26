@@ -152,4 +152,15 @@ class Game
         }
         return $normalizedPlayers;
     }
+
+    public static function getPlyersPointsAfterOpeningCards()
+    {
+        foreach (self::$players as $player) {
+            $normalizedPoints[] = [
+                'name' => $player->getName(),
+                'points' => $player->getCardsValueAfterOpening()
+            ];
+        }
+        return $normalizedPoints;
+    }
 }

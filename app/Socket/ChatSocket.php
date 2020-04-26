@@ -107,7 +107,22 @@ class ChatSocket extends BaseSocket
             foreach ($this->clients as $client) {
                 $client->send(json_encode($dataAboutRoundState));
             }
-        } elseif (isset($player_data['endRoundWithoutShowingUp']) && $player_data['endRoundWithoutShowingUp']) {
+        } else if (isset($player_data['checkUserCardsValue']) && $player_data['checkUserCardsValue']) {
+
+            Game::getCurrentRound()->checkUserCardsValue();
+            Game::getCurrentRound()->setWinnerAfterOpeningCards();
+
+            $dataAfterOpeningCards = [
+                "dataAfterOpeningCards" => true,
+                "playersPoints" => Game::getPlyersPointsAfterOpeningCards(),
+                "winnerAfterOpening" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
+            ];
+
+            foreach ($this->clients as $client) {
+                $client->send(json_encode($dataAfterOpeningCards));
+            }
+
+        } else if (isset($player_data['endRoundWithoutShowingUp']) && $player_data['endRoundWithoutShowingUp']) {
             
             Game::endRoundWithoutShowingUp();
 

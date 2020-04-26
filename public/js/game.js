@@ -39,6 +39,13 @@ $("#save").on('click', () => {
     conn.send(JSON.stringify(betData));
 });
 
+$("#openCards").on('click', () => {
+    const checkUserCardsValue = {
+        checkUserCardsValue: true,
+    };
+    conn.send(JSON.stringify(checkUserCardsValue));
+});
+
 $("#takeCashBox").on('click', () => {
     const endRound = {
         endRoundWithoutShowingUp: true,
@@ -181,8 +188,14 @@ conn.onmessage = (e) => {
                 }
             });
         }
-    } else if (msgObject.isRoundEndWithoutShowingUp) {
+    } else if (msgObject.dataAfterOpeningCards) {
+        console.dir(msgObject);
+
+
+    }else if (msgObject.isRoundEndWithoutShowingUp) {
+
         alert(`победитель: ${msgObject.playerTakingConWithoutShowingUp}`);
+
     } else if (msgObject.nextRound) {
         //очищаем поле карты у игрока
         $('#myCards').empty();

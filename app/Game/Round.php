@@ -23,6 +23,7 @@ class Round
     private $playerOpenCardAbility;
     private $playerTakingConWithoutShowingUp;
     private $winner;
+    private $winnerAfterOpeningCards;
     private $endRoundWithoutShowingUp = false;
 
     public function __construct(int $currentRound)
@@ -278,6 +279,27 @@ class Round
         return $this->winner;
     }
 
+    public function getWinnerAfterOpeningCards()
+    {
+        return $this->winnerAfterOpeningCards;
+    }
+
+    public function setWinnerAfterOpeningCards()
+    {
+        $players = Game::getAllPlayers();
+        $maxValue = $players[0]->getCardsValueAfterOpening();
+        $playerWithMaxValue = $players[0];
+
+        foreach ($players as $player) {
+            if ($player->getCardsValueAfterOpening() > $maxValue) {
+                $maxValue = $player->getCardsValueAfterOpening();
+                $playerWithMaxValue = $player;
+            }
+        }
+
+        $this->winnerAfterOpeningCards = $player;
+    }
+
     public function getPlayerTakingConWithoutShowingUp()
     {
         if ($this->playerTakingConWithoutShowingUp) {
@@ -288,6 +310,11 @@ class Round
             }
         }
         return false;
+    }
+
+    public function checkUserCardsValue()
+    {
+        Diller::checkUserCardsValue();
     }
 
     public function endRoundWithoutShowingUp()
