@@ -1,6 +1,9 @@
 const conn = new WebSocket('ws://192.168.0.107:8050');
 conn.onopen = (e) => console.log("Соединение установлено...!");
 
+import playersArrangement from './ playersArrangement.js';
+
+
 $("#betSum").on('input', function () {
     if ($(this).val() % 5 !== 0) {
          $(this).css({'border': '1px solid red'});
@@ -111,73 +114,14 @@ conn.onmessage = (e) => {
         //заполняем поле "баланс" текущего игрока
         document.querySelector("#playerBalance").innerHTML = balance;
 
-        //заполняем поле "другие игроки" текущего игрока
-        if (allPlayers.length == 3) {
-
-            allPlayers.forEach((element, index, array) => {
-                if (index === 0) {
-                    const playerContainer = document.createElement("div");
-                    playerContainer.classList.add("playerContainer");
-                    const imgContainer = document.createElement("div");
-                    const playerDataContainer = document.createElement("div");
-                    const img = new Image(24, 24);
-                    img.src = 'https://img.icons8.com/wired/2x/circled-user.png';
-                    imgContainer.appendChild(img); 
-                    playerContainer.appendChild(imgContainer);
-                    playerContainer.appendChild(playerDataContainer);
-                    playerDataContainer.append(element.name);
-                    playerContainer.appendChild(playerDataContainer);
-                    $("#room").append(playerContainer);
-
-                    const roomHeight = $("#room").height();
-                    const playerContainerHeight = $(playerContainer).height();
-                    
-                    $(playerContainer)
-                        .css({"transform": `translateY(calc(${roomHeight / 2 - playerContainerHeight / 2}px))`});
-                        
-                } else if (index === 1) {
-                    const playerContainer = document.createElement("div");
-                    playerContainer.classList.add("playerContainer");
-                    const imgContainer = document.createElement("div");
-                    const playerDataContainer = document.createElement("div");
-                    const img = new Image(24, 24);
-                    img.src = 'https://img.icons8.com/wired/2x/circled-user.png';
-                    imgContainer.appendChild(img); 
-                    playerContainer.appendChild(imgContainer);
-                    playerContainer.appendChild(playerDataContainer);
-                    playerDataContainer.append(element.name);
-                    playerContainer.appendChild(playerDataContainer);
-                    $("#room").append(playerContainer);
-
-                    const roomWidth = $("#room").width();
-                    const playerContainerWidth = $(playerContainer).width();
-                    
-                    $(playerContainer)
-                        .css({"transform": `translateX(calc(${roomWidth / 2 - playerContainerWidth / 2}px))`});
-                        
-                } else {
-                    const playerContainer = document.createElement("div");
-                    playerContainer.classList.add("playerContainer");
-                    const imgContainer = document.createElement("div");
-                    const playerDataContainer = document.createElement("div");
-                    const img = new Image(24, 24);
-                    img.src = 'https://img.icons8.com/wired/2x/circled-user.png';
-                    imgContainer.appendChild(img); 
-                    playerContainer.appendChild(imgContainer);
-                    playerContainer.appendChild(playerDataContainer);
-                    playerDataContainer.append(element.name);
-                    playerContainer.appendChild(playerDataContainer);
-                    $("#room").append(playerContainer);
-                    
-                    const roomHeight = $("#room").height();
-                    const playerContainerHeight = $(playerContainer).height();
-                    
-                    $(playerContainer)
-                        .css({'right': 0})
-                        .css({"transform": `translateY(calc(${roomHeight / 2 - playerContainerHeight / 2}px))`});
-                }
-            });
-        }
+        //заполняем комнату игроками
+        playersArrangement(
+            allPlayers, $('#room'),
+            msgObject.name,
+            msgObject.currentDistributor,
+            msgObject.currentFirstWordPlayer
+        );
+        
 
         //отмечаем раздававшего
         if (msgObject.name === currentDistributor) {
@@ -189,25 +133,10 @@ conn.onmessage = (e) => {
             const cardContainer = document.createElement("div");
             cardContainer.innerHTML = `${card.name} ${card.suit}`;
             cardContainer.classList.add("card");
-            cardsContainer = document.querySelector("#myCards");
+            const cardsContainer = document.querySelector("#myCards");
             cardsContainer.appendChild(cardContainer);
         });
 
-        //заполняем дефолтными ставками поле "кон"
-        const defaultBets = msgObject.defaultBets;
-        const cashBox = document.querySelector("#cashBox");
-
-        /*defaultBets.forEach(item => {
-            const betContainer = document.createElement("div");
-            betContainer.classList.add("bet");
-            const betMakerContainer = document.createElement("div");
-            const defaultBetContainer = document.createElement("div");
-            betMakerContainer.innerHTML = item.betMaker;
-            defaultBetContainer.innerHTML = item.defaultBet;
-            betContainer.appendChild(betMakerContainer);
-            betContainer.appendChild(defaultBetContainer);
-            cashBox.appendChild(betContainer);
-        });*/
 
     } else if (msgObject.roundStateAfterBetting) {
         
@@ -222,6 +151,24 @@ conn.onmessage = (e) => {
                 $("#takeCashBox").css({"display": "block"});
             }
         }
+        //удаляем флаг следующего хода у текущего игрока
+        $('.firstWordFlag').detach();
+
+        //перемещаем флаг следующего хода
+        const firstWordFlag = document.createElement("div");
+        firstWordFlag.classList.add('firstWordFlag');
+                    
+        $(firstWordFlag)
+            .css({'border': '10px solid transparent'})
+            .css({'border-bottom': '10px solid green'});
+            console.log(msgObject.nextStepPlayer);
+        $('.playerContainer').each(function() {
+            console.log($(this).attr('ownerName'));
+            
+            if ($(this).attr('ownerName') === msgObject.nextStepPlayer) {
+                $(this).append(firstWordFlag);
+            }
+        });
 
         const lastBet = msgObject.lastBet;
         $("#playerBalance").html(msgObject.balanceOfAllPlayers[$("#playerName").html()]);

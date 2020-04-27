@@ -57,7 +57,7 @@
 
 
         <script src="{{ URL::asset('js/jquery_min.js') }}"></script>
-        <script src="{{ URL::asset('js/game.js') }}"></script>
+        <script src="{{ URL::asset('js/game.js') }}" type="module"></script>
         
     </body>
 </html>
