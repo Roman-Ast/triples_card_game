@@ -16,7 +16,7 @@ class Diller
 
         foreach (Game::getAllPlayers() as $player) {
             for ($i = 0; $i < self::NUMBER_OF_CARDS_ON_HAND; $i++) {
-                $rand = rand(1, count($deck) - 1);
+                $rand = rand(0, count($deck) - 1);
                 $card = $deck[$rand];
                 $player->take_card($card);
                 unset($deck[$rand]);

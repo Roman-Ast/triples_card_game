@@ -1,6 +1,16 @@
 const conn = new WebSocket('ws://192.168.0.107:8050');
 conn.onopen = (e) => console.log("Соединение установлено...!");
 
+//устанавливаем cтол ровно по центру
+const tableWidht = $('#table').width();
+const roomHeight = $('#room').height();
+const roomWidth = $('#room').width();
+
+$('#table')
+    .css({'height': tableWidht})
+    .css({'left': roomWidth / 2 - tableWidht / 2})
+    .css({'top': roomHeight / 2 - tableWidht / 2});
+
 import playersArrangement from './ playersArrangement.js';
 
 
@@ -102,6 +112,8 @@ conn.onmessage = (e) => {
         const modalHeight = $("#modal").height();
         const roomWidth = $("#room").width();
         const modalWidth = $("#modal").width();
+        const tableHeight = $("#table").height();
+        const tableWidth = $("#table").width();
 
         $("#modal")
             .css({"left": `calc(${roomWidth / 2 - modalWidth / 2}px)`})
@@ -116,17 +128,18 @@ conn.onmessage = (e) => {
 
         //заполняем комнату игроками
         playersArrangement(
-            allPlayers, $('#room'),
+            allPlayers,
+            $('#room'),
             msgObject.name,
             msgObject.currentDistributor,
             msgObject.currentFirstWordPlayer
         );
-        
 
-        //отмечаем раздававшего
-        if (msgObject.name === currentDistributor) {
-            $('#userData').append(`<div>(раздающий)</div>`);
-        }
+        //заполняем поле "касса" суммой всех дефолтных ставок
+        ((defaultBets) => {
+            const sumOfDefaultBets = defaultBets.reduce((acc, item) => acc + item.defaultBet, 0);
+            $("#cashBox").html(sumOfDefaultBets);
+        })(msgObject.defaultBets);
 
         //заполняем поле "карты" текущего игрока
         cards.forEach(card => {
@@ -161,10 +174,7 @@ conn.onmessage = (e) => {
         $(firstWordFlag)
             .css({'border': '10px solid transparent'})
             .css({'border-bottom': '10px solid green'});
-            console.log(msgObject.nextStepPlayer);
         $('.playerContainer').each(function() {
-            console.log($(this).attr('ownerName'));
-            
             if ($(this).attr('ownerName') === msgObject.nextStepPlayer) {
                 $(this).append(firstWordFlag);
             }

@@ -36,13 +36,22 @@
         height: 70%;
     }
     #table{
-        width: 50%;
-        height: calc(100vw / 2 - 4px);
+        width: 60%;
         border: 1px solid #ccc;
         border-radius: 50%;
         position: absolute;
-        left: calc(100vw / 4 - 2px);
-        top: calc(100vh / 5);
+    }
+    #cashBox{
+        min-width: 30px;
+        min-height: 20px;
+        position: absolute;
+        top: calc(50% - 10px);
+        left: calc(50% - 15px)
+    }
+    .playerBetField{
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     .playerContainer{
         width: 50px;

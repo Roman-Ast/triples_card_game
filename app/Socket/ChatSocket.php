@@ -39,9 +39,9 @@ class ChatSocket extends BaseSocket
             if (isset($player_data['readyToPlay']) && $player_data['readyToPlay']) {
                 foreach (Game::getAllPlayers() as $player) {
                     if ($player->getConnection() == $player_sender) {
-                        $player->setId($player_data["id"]);
+                        $player->setId((int)$player_data["id"]);
                         $player->setName($player_data["name"]);
-                        $player->setBalance($player_data["balance"]);
+                        $player->setBalance((int)$player_data["balance"]);
                         $player->readyToPlay();
                     }
                 }
