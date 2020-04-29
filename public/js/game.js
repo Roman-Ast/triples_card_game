@@ -204,11 +204,10 @@ conn.onmessage = (e) => {
 
         //если есть возможность открыть карты
         if (msgObject.playerOpenCardAbility) {
-            $("#bet").hide();
+
             if ($("#playerName").html() === msgObject.playerOpenCardAbility) {
                 //показываем кнопку "вскрыть карты"
                 $("#openCards").css({"display": "block"});
-                $("#bet").hide();
             }
         }//если все пасанули
         else if (msgObject.playerTakingConWithoutShowingUp) {

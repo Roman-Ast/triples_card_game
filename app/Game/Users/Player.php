@@ -16,10 +16,21 @@ class Player
     private $radiness = false;
     private $distributor = false;
     private $cardsValueAfterOpening = 0;
+    private $lastRaise;
 
     public function __construct(ConnectionInterface $conn)
     {
         $this->conn = $conn;
+    }
+
+    public function setLastRaise(int $bet)
+    {
+        $this->lastRaise = $bet;
+    }
+
+    public function getLastRase()
+    {
+        return $this->lastRaise ?? null;
     }
 
     public function makeDefaultBet(int $defaultBet)

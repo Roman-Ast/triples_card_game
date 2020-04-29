@@ -102,7 +102,8 @@ class ChatSocket extends BaseSocket
                 "defaultBet" => Game::getDefaultBet(),
                 "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
                 "bets" => $currentRound->getRoundBets(),
-                "winner" =>$currentRound->getWinner()
+                "winner" => $currentRound->getWinner(),
+                "toCollate" => $currentRound->getNextStepPlayerToCollate()
             ];
 
             foreach ($this->clients as $client) {

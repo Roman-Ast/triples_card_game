@@ -30,9 +30,8 @@ class Diller
         $players = Game::getAllPlayers();
 
         foreach ($players as $player) {
-            var_dump($player->getName());
             $cards = $player->getCardsOnHand();
-            var_dump($cards);
+            
             foreach ($cards as $index => $card) {
                 if ($card->getName() == 'Семь' && $card->getSuit() == 'Пики') {
                     $cardsWithProcessedSeven = $card->becomeSuitable($cards);
