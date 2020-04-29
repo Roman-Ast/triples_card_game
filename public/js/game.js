@@ -1,5 +1,8 @@
 const conn = new WebSocket('ws://192.168.0.107:8050');
-conn.onopen = (e) => console.log("Соединение установлено...!");
+conn.onopen = (e) => {
+    console.log("Соединение установлено...!");
+    
+}
 
 //устанавливаем cтол ровно по центру
 const tableWidht = $('#table').width();
@@ -14,17 +17,8 @@ $('#table')
 import playersArrangement from './ playersArrangement.js';
 
 
-$("#betSum").on('input', function () {
-    if ($(this).val() % 5 !== 0) {
-         $(this).css({'border': '1px solid red'});
-         $("#makeBet").attr('disabled', true);
-    } else {
-         $(this).css({'border': '#ccc'});
-         $("#makeBet").removeAttr('disabled');
-    }
-});
-
 $("#startPlay").on('click', () => {
+    $('.playerContainer').detach();
     const playerData = {
         id: document.querySelector("#playerId").innerHTML,
         name: document.querySelector("#playerName").innerHTML,
@@ -40,6 +34,17 @@ $("#makeBet").on('click', () => {
         betMaker: $("#playerName").html(),
         betSum: $("#betSum").val()
     };
+
+    /*$('.playerBetField').each(function () {
+       if ($(this).attr('ownerName') == $('#playerName').text()) {
+           if (!parseInt($(this).text())) {
+                $(this).text(betData.betSum);
+           } else {
+                $(this).text(parseInt($(this).text()) + betData.betSum);
+           }
+       };
+    });*/
+
     conn.send(JSON.stringify(betData));
 });
 
@@ -68,11 +73,18 @@ $("#takeCashBox").on('click', () => {
 
 
 conn.onmessage = (e) => {
+    //все модальные окна исчезают через 5 секунд
+    setTimeout(() => {
+        $('#modal').hide();
+    }, 5000);
+
     const msgObject = JSON.parse(e.data);
 
     if (msgObject.dataForRoundStarting) {
+        
         //прячем кнопку "готов" на время раунда
         $("#radiness").css({"display":"none"});
+        $("#bet").css({"display":"flex"});
 
         console.dir(msgObject);
         if (msgObject.alreadyRunningGame) {
@@ -104,7 +116,7 @@ conn.onmessage = (e) => {
                 
         $("#modal").show(1000);
         $("#modalClose").on("click", function () {
-        $("#modal").hide(1000); 
+            $("#modal").hide(1000); 
         });
         
         //смещаем модальное окно на половину вправо и вниз
@@ -122,6 +134,8 @@ conn.onmessage = (e) => {
 
         if (msgObject.name !== currentFirstWordPlayer) {
             $("#makeBet").attr("disabled", true);
+            $("#save").attr("disabled", true);
+            $("#betSum").prop("disabled", true);
         }
         //заполняем поле "баланс" текущего игрока
         document.querySelector("#playerBalance").innerHTML = balance;
@@ -150,20 +164,70 @@ conn.onmessage = (e) => {
             cardsContainer.appendChild(cardContainer);
         });
 
+        //зaполняем селект шагами возможных ставок
+        for (let i = 50; i < 3000; i += 50) {
+            $('#betSum').append(`<option value="${i}">${i}</option>`);
+        }
+        //если раунд 1 то показываем "поднять" или "пасс"
+        if (msgObject.currentRoundId == 1) {
+            $('#collate').hide();
+        }
+        //если сумма raise не выбрана деактивируем кнопку "поднять"
+        if (!$('#betSum').val()) {
+            $('#makeBet').attr('disabled', true);
+        }
+        $('#betSum').on('change', function () {
+            $('#makeBet').removeAttr('disabled');
+        })
 
     } else if (msgObject.roundStateAfterBetting) {
-        
+        console.dir(msgObject);
+        //показываем ставки игроков на столе
+        $('.playerBetField').each(function (params) {
+            for (const name in msgObject.bets) {
+                if (name === $(this).attr('ownerName')) {
+                    if (msgObject.bets[name] === 0){
+                        $(this).text('пасс');
+                        $(this).css({'color': 'red'});
+                        $(this).css({'font-style': 'italic'});
+                    }
+                    else $(this).text(msgObject.bets[name]);
+                }
+            }
+            
+        });
+
+        //добавляем все ставки игроков в общую кассу на столе
+        const sumOfDefaultBets = msgObject.defaultBets.reduce((acc, item) => acc + item.defaultBet, 0);
+        const sumOfBets = Object.values(msgObject.bets).reduce((acc, item) => acc + item, 0);
+        $('#cashBox').text(sumOfDefaultBets + sumOfBets);
+
+        //если есть возможность открыть карты
         if (msgObject.playerOpenCardAbility) {
+            $("#bet").hide();
             if ($("#playerName").html() === msgObject.playerOpenCardAbility) {
                 //показываем кнопку "вскрыть карты"
                 $("#openCards").css({"display": "block"});
+                $("#bet").hide();
             }
-        } else if (msgObject.playerTakingConWithoutShowingUp) {
+        }//если все пасанули
+        else if (msgObject.playerTakingConWithoutShowingUp) {
+            $('#modalBody').empty();
+            $('#modalBody').append(
+                `<div>
+                    Игрок ${msgObject.playerTakingConWithoutShowingUp} забирает кассу не вскрываясь!
+                </div>`
+            );
+            
+            $('#modal').show();
+            $("#bet").hide();
             if ($("#playerName").html() === msgObject.playerTakingConWithoutShowingUp) {
                 //показываем кнопку "забрать кон"
                 $("#takeCashBox").css({"display": "block"});
+                $("#bet").hide();
             }
         }
+
         //удаляем флаг следующего хода у текущего игрока
         $('.firstWordFlag').detach();
 
@@ -182,33 +246,29 @@ conn.onmessage = (e) => {
 
         const lastBet = msgObject.lastBet;
         $("#playerBalance").html(msgObject.balanceOfAllPlayers[$("#playerName").html()]);
-        console.dir(msgObject);
+        
 
         if (msgObject.nextStepPlayer !== $("#playerName").html()) {
             $("#save").attr('disabled', true);
             $("#makeBet").attr('disabled', true);
-            $("#leaveGame").attr('disabled', true);
+            $('#betSum').prop('disabled', true);
         } else {
             $("#save").removeAttr('disabled');
-            $("#makeBet").removeAttr('disabled');
-            $("#leaveGame").removeAttr('disabled');
-            $("#betSum").on('input', function () {
-                if ($(this).val() < lastBet || $(this).val() % 5 !== 0) {
-                     $(this).css({'border': '1px solid red'});
-                     $("#makeBet").attr('disabled', true);
-                } else {
-                     $(this).css({'border': '#ccc'});
-                     $("#makeBet").removeAttr('disabled');
-                }
-            });
+            $('#betSum').prop('disabled', false);
+            //если сумма raise не выбрана деактивируем кнопку "поднять"
+            if (!$('#betSum').val()) {
+                $('#makeBet').attr('disabled', true);
+            }
+            $('#betSum').on('change', function () {
+                $('#makeBet').removeAttr('disabled');
+            })
         }
     } else if (msgObject.dataAfterOpeningCards) {
         console.dir(msgObject);
 
 
     }else if (msgObject.isRoundEndWithoutShowingUp) {
-
-        alert(`победитель: ${msgObject.playerTakingConWithoutShowingUp}`);
+        $('#modalBody').append(`<div>победитель: ${msgObject.playerTakingConWithoutShowingUp}</div>`);
 
     } else if (msgObject.nextRound) {
         //очищаем поле карты у игрока

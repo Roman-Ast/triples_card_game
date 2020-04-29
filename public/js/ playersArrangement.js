@@ -5,7 +5,6 @@ const createPlayerBetField = (elementName) => {
     $(playerBetField).attr('ownerName', elementName);
 
     $(playerBetField)
-        .css({'border': '1px solid green'})
         .css({'position': 'absolute'})
         .css({'width': '26px'})
         .css({'height': '20px'});
@@ -40,12 +39,14 @@ const createPlayerContainer = (elementName, currentPlayerName, currentDistributo
         .css({'justify-content': 'center'})
         .css({'align-items': 'center'});
 
+    playerDataContainer.classList.add('playerDataContainer');
+
     if (elementName === currentDistributorName) {
         const distributorFlag = document.createElement("div");
                     
         $(distributorFlag)
-            .css({'width': '5px'})
-            .css({'height': '5px'})
+            .css({'width': '10px'})
+            .css({'height': '10px'})
             .css({'border-radius': '50%'})
             .css({'background-color': '#800080'});
         playerDataContainer.appendChild(distributorFlag);
@@ -102,8 +103,7 @@ const playersArrangement = (
                 //добавлем поле ставки на стол
                 const playerBetField = createPlayerBetField(element.name);
                 room.append(playerBetField);
-                
-                $(playerBetField).text(20);
+
                 $(playerBetField)
                     .css({'left': `calc(${roomWidth / 2 - tableWidth / 2}px)`})
                     .css({"transform": `translateY(calc(${roomHeight / 2 - $(playerBetField).height() / 2}px))`});
@@ -126,8 +126,7 @@ const playersArrangement = (
                 //добавлем поле ставки на стол
                 const playerBetField = createPlayerBetField(element.name);
                 room.append(playerBetField);
-                
-                $(playerBetField).text(20);
+
                 $(playerBetField)
                     .css({'left': `calc(${roomWidth / 2 - $(playerBetField).width() / 2}px)`})
                     .css({"transform": `translateY(calc(${roomHeight / 2 - tableHeight / 2}px))`});
@@ -150,8 +149,7 @@ const playersArrangement = (
                 //добавлем поле ставки на стол
                 const playerBetField = createPlayerBetField(element.name);
                 room.append(playerBetField);
-                
-                $(playerBetField).text(20);
+
                 $(playerBetField)
                     .css({'left': `calc(${roomWidth / 2 + tableWidth / 2 - $(playerBetField).width()}px)`})
                     .css({"transform": `translateY(calc(${roomHeight / 2 - $(playerBetField).height() / 2}px))`});

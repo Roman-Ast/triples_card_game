@@ -79,10 +79,6 @@
         justify-content: center;
         align-items: center;
     }
-    .distributor{
-        background-color: green;
-    }
-    
     .bet{
         display: flex;
         flex-direction: row;
@@ -118,24 +114,22 @@
     #buttons{
         display: flex;
         flex-wrap: nowrap;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         width: 100%;
     }
     
     #bet{
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        max-width: 30%;
-        height: 100%;
+        display: none;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-evenly;
+        align-items: center;
+        width: 100%;
     }
-    #dangerZone{
+    #raise{
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        max-width: 30%;
-        height: 100%;
     }
     #openCards{
         display: none;

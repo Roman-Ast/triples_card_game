@@ -100,6 +100,7 @@ class ChatSocket extends BaseSocket
                 "isRoundEndWithoutShowingUp" => $currentRound->isRoundEndWithoutShowingUp(),
                 "balanceOfAllPlayers" => Game::getBalanceOfAllPlayers(),
                 "defaultBet" => Game::getDefaultBet(),
+                "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
                 "bets" => $currentRound->getRoundBets(),
                 "winner" =>$currentRound->getWinner()
             ];
