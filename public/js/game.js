@@ -5,14 +5,20 @@ conn.onopen = (e) => {
 }
 
 //устанавливаем cтол ровно по центру
-const tableWidht = $('#table').width();
+const tableWidth = $('#table').width();
 const roomHeight = $('#room').height();
 const roomWidth = $('#room').width();
 
 $('#table')
-    .css({'height': tableWidht})
-    .css({'left': roomWidth / 2 - tableWidht / 2})
-    .css({'top': roomHeight / 2 - tableWidht / 2});
+    .css({'height': tableWidth})
+    .css({'left': roomWidth / 2 - tableWidth / 2})
+    .css({'top': roomHeight / 2 - tableWidth / 2});
+
+$('#internalRound')
+    .css({'height': tableWidth / 2})
+    .css({'width': tableWidth / 2})
+    .css({'left': tableWidth / 2 - $('#internalRound').width() / 2})
+    .css({'top': tableWidth / 2 - $('#internalRound').width() / 2});
 
 import playersArrangement from './ playersArrangement.js';
 
@@ -35,7 +41,7 @@ $("#makeBet").on('click', () => {
         betSum: $("#betSum").val()
     };
 
-    /*$('.playerBetField').each(function () {
+    $('.playerBetField').each(function () {
        if ($(this).attr('ownerName') == $('#playerName').text()) {
            if (!parseInt($(this).text())) {
                 $(this).text(betData.betSum);
@@ -43,7 +49,7 @@ $("#makeBet").on('click', () => {
                 $(this).text(parseInt($(this).text()) + betData.betSum);
            }
        };
-    });*/
+    });
 
     conn.send(JSON.stringify(betData));
 });
@@ -54,6 +60,13 @@ $("#save").on('click', () => {
         betMaker: $("#playerName").html(),
         betSum: 0
     };
+
+    $('.playerBetField').each(function () {
+        if ($(this).attr('ownerName') == $('#playerName').text()) {
+            $(this).text('пасс');
+        };
+     });
+
     conn.send(JSON.stringify(betData));
 });
 
@@ -152,13 +165,20 @@ conn.onmessage = (e) => {
         //заполняем поле "касса" суммой всех дефолтных ставок
         ((defaultBets) => {
             const sumOfDefaultBets = defaultBets.reduce((acc, item) => acc + item.defaultBet, 0);
-            $("#cashBox").html(sumOfDefaultBets);
+            $("#cashBoxSum").text(sumOfDefaultBets);
         })(msgObject.defaultBets);
 
         //заполняем поле "карты" текущего игрока
+        console.log(cards[0].face);
+        
         cards.forEach(card => {
             const cardContainer = document.createElement("div");
-            cardContainer.innerHTML = `${card.name} ${card.suit}`;
+            
+            const img = new Image(70, 120);
+            img.src = card.face;
+            img.style.width = '100%';
+            cardContainer.appendChild(img);
+
             cardContainer.classList.add("card");
             const cardsContainer = document.querySelector("#myCards");
             cardsContainer.appendChild(cardContainer);
@@ -200,7 +220,7 @@ conn.onmessage = (e) => {
         //добавляем все ставки игроков в общую кассу на столе
         const sumOfDefaultBets = msgObject.defaultBets.reduce((acc, item) => acc + item.defaultBet, 0);
         const sumOfBets = Object.values(msgObject.bets).reduce((acc, item) => acc + item, 0);
-        $('#cashBox').text(sumOfDefaultBets + sumOfBets);
+        $('#cashBoxSum').text(sumOfDefaultBets + sumOfBets);
 
         //если есть возможность открыть карты
         if (msgObject.playerOpenCardAbility) {
@@ -209,8 +229,26 @@ conn.onmessage = (e) => {
                 //показываем кнопку "вскрыть карты"
                 $("#openCards").css({"display": "block"});
             }
-        }//если все пасанули
-        else if (msgObject.playerTakingConWithoutShowingUp) {
+        } else {
+            //удаляем флаг следующего хода у текущего игрока
+            $('.firstWordFlag').detach();
+
+            //перемещаем флаг следующего хода
+            const firstWordFlag = document.createElement("div");
+            firstWordFlag.classList.add('firstWordFlag');
+                        
+            $(firstWordFlag)
+                .css({'border': '10px solid transparent'})
+                .css({'border-bottom': '10px solid green'});
+            $('.playerContainer').each(function() {
+                if ($(this).attr('ownerName') === msgObject.nextStepPlayer) {
+                    $(this).append(firstWordFlag);
+                }
+            });
+        }
+        
+        //если все пасанули
+        if (msgObject.playerTakingConWithoutShowingUp) {
             $('#modalBody').empty();
             $('#modalBody').append(
                 `<div>
@@ -227,21 +265,7 @@ conn.onmessage = (e) => {
             }
         }
 
-        //удаляем флаг следующего хода у текущего игрока
-        $('.firstWordFlag').detach();
-
-        //перемещаем флаг следующего хода
-        const firstWordFlag = document.createElement("div");
-        firstWordFlag.classList.add('firstWordFlag');
-                    
-        $(firstWordFlag)
-            .css({'border': '10px solid transparent'})
-            .css({'border-bottom': '10px solid green'});
-        $('.playerContainer').each(function() {
-            if ($(this).attr('ownerName') === msgObject.nextStepPlayer) {
-                $(this).append(firstWordFlag);
-            }
-        });
+        
 
         const lastBet = msgObject.lastBet;
         $("#playerBalance").html(msgObject.balanceOfAllPlayers[$("#playerName").html()]);
@@ -272,7 +296,7 @@ conn.onmessage = (e) => {
     } else if (msgObject.nextRound) {
         //очищаем поле карты у игрока
         $('#myCards').empty();
-        $('#cashBox').empty();
+        $('#cashBoxSum').empty();
         $('#modalBody').empty();
         $('#otherPlayers').empty();
         alert('next round');

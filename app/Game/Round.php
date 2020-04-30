@@ -151,11 +151,63 @@ class Round
         return false;
         
     }
+
+    private function setNextStepPlayer()
+    {
+        //определяем индекс ходившего игрока
+        foreach ($this->roundParameters as $index => $player) {
+            if ($player['resourceId'] === $this->currentStepPlayer->getConnResourceId()) {
+                $currentStepPlayerIndex = $index;
+            }
+        }
+
+        if ($currentStepPlayerIndex === 0) {
+            for ($i = 1; $i < count($this->roundParameters); $i ++) { 
+                if ($this->roundParameters[$i]['state'] !== 'save') {
+                    $nextStepPlayerResourceId = $this->roundParameters[$i]['resourceId'];
+                    break;
+                }
+            }
+        } else if ($currentStepPlayerIndex === count($this->roundParameters) - 1) {
+            for ($i = 0; $i < count($this->roundParameters); $i ++) { 
+                if ($this->roundParameters[$i]['state'] !== 'save') {
+                    $nextStepPlayerResourceId = $this->roundParameters[$i]['resourceId'];
+                    break;
+                }
+            }
+        } else {
+            for ($i = $currentStepPlayerIndex + 1; $i < count($this->roundParameters); $i ++) { 
+                if ($this->roundParameters[$i]['state'] !== 'save') {
+                    $nextStepPlayerResourceId = $this->roundParameters[$i]['resourceId'];
+                    break;
+                }
+            }
+            if (!$nextStepPlayerResourceId) {
+                for ($i = 0; $i < $currentStepPlayerIndex; $i ++) { 
+                    if ($this->roundParameters[$i]['state'] !== 'save') {
+                        $nextStepPlayerResourceId = $this->roundParameters[$i]['resourceId'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        //находим в игроках данный resourceId
+        foreach (Game::getAllPlayers() as $player) {
+            if ($player->getConnResourceId() === $nextStepPlayerResourceId) {
+                return $player;
+            }
+        }
+    }
+
     public function takeBet(Player $playerSteping, int $bet)
     {
         
         if (isset($this->bets[$playerSteping->getName()])) {
             $this->bets[$playerSteping->getName()] += $bet;
+            if ($bet) {
+                $bet = $this->bets[$playerSteping->getName()];
+            }
         } else {
             $this->bets[$playerSteping->getName()] = $bet;
         }
@@ -172,18 +224,18 @@ class Round
                 $currentStepPlayerIndex = $index;
             }
         }
-        if ($playerSteping->getLastRase()) {
-            $bet += $playerSteping->getLastRase();
-        } else {
-            $playerSteping->setLastRaise($bet);
+
+
+        /*if ($playerSteping->getLastRaiseOrColl()) {
+            $bet += $playerSteping->getLastRaiseOrColl();
         }
-        var_dump('player bet: ' . $playerSteping->getLastRase());
         
-
-
+        $playerSteping->setLastRaiseOrColl($bet);
+        */
+        var_dump($bet);
+        var_dump($this->lastBet);
         //обновление параметров раунда и текущего состояния
         if ($bet > $this->lastBet) {
-            
             $this->lastRasingPlayer = $playerSteping;
 
             foreach ($this->roundParameters as $index => $player) {
@@ -197,14 +249,13 @@ class Round
                     $this->roundParameters[$index]['state'] = 'collate';
                 }
             }
-        } else if ($bet < $this->lastBet || $bet === 0) {
+        } else if ($bet === 0) {
             foreach ($this->roundParameters as $index => $player) {
                 if ($playerSteping->getConnResourceId() == $player['resourceId']) {
                     $this->roundParameters[$index]['state'] = 'save';
                 }
             }
         }
-        //var_dump($this->roundParameters);
 
         if ($bet > 0) {
             $this->lastBet = $bet;
@@ -213,32 +264,12 @@ class Round
         }
         
         //игрок который будет делать следующий ход
-        for ($i = 0; $i < count($players); $i++) { 
-            
-            if ($i == $currentStepPlayerIndex) {
-                if (
-                    isset($players[$i + 1]) &&
-                    !in_array($players[$i + 1]->getConnResourceId(), $this->playersSaving)
-                    ) 
-                {
-                    $this->nextStepPlayer = $players[$currentStepPlayerIndex + 1];
-                    break;
-                }
-            }
-            if ($i == count($players) - 1) {
-                for ($j = 0; $j < count($players); $j++) { 
-                    if (!in_array($players[$j]->getConnResourceId(), $this->playersSaving)) {
-                        $this->nextStepPlayer = $players[$j];
-                        break;
-                    }
-                }
-            }
-        }
+        $this->nextStepPlayer = $this->setNextStepPlayer();
 
+        var_dump($this->roundParameters);
         $playerOpenCardAbility = $this->checkRoundParameters($playerSteping);
 
         if ($playerOpenCardAbility) {
-            
             foreach (Game::getAllPlayers() as $key => $player) {
                 if ($player->getConnResourceId() == $playerOpenCardAbility) {
                     $this->playerOpenCardAbility = $player;
@@ -255,7 +286,7 @@ class Round
                 return null;
             }
         } 
-        var_dump($this->roundParameters);
+        
         //если да, то проверяем пора ли завершать раунд
         $playerOpenCardAbility = null;
         $countOfRaises = 0;
@@ -273,7 +304,7 @@ class Round
             }
         }
 
-        //если два и более raise и все сходили, тогда удаляем все до 1 первого raise
+        //если два и более raise и все сходили, тогда удаляем все до последнего первого raise
         if ($countOfRaises >= 2) {
             if ($playerSteping->getConnResourceId() !== $this->lastRasingPlayer->getConnResourceId()) {
                 foreach ($this->roundParameters as $index => $player) {
@@ -311,18 +342,35 @@ class Round
                     }
                 }
             } else {
-                for ($i = $indexOfCurrentStepPlayer + 1; $i < $indexOfLastRasingPlayer; $i++) { 
-                    if ($this->roundParameters[$i]['state'] === 'collate' || $this->roundParameters[$i]['state'] === 'raise') {
-                        $this->roundParameters[$i]['state'] = null;
+                var_dump($indexOfCurrentStepPlayer);
+                var_dump($indexOfLastRasingPlayer);
+                if ($indexOfCurrentStepPlayer === count($this->roundParameters) - 1) {
+                    for ($i = 0; $i < $indexOfLastRasingPlayer; $i++) { 
+                        if ($this->roundParameters[$i]['state'] === 'collate' || $this->roundParameters[$i]['state'] === 'raise') {
+                            $this->roundParameters[$i]['state'] = null;
+                        }
+                    }
+                } else if ($indexOfCurrentStepPlayer === 0) {
+                    for ($i = $indexOfCurrentStepPlayer + 1; $i < count($this->roundParameters); $i++) { 
+                        if ($this->roundParameters[$i]['state'] === 'collate' || $this->roundParameters[$i]['state'] === 'raise') {
+                            $this->roundParameters[$i]['state'] = null;
+                        }
+                    }
+                } else {
+                    for ($i = $indexOfCurrentStepPlayer + 1; $i < count($this->roundParameters); $i++) { 
+                        if ($this->roundParameters[$i]['state'] === 'collate' || $this->roundParameters[$i]['state'] === 'raise') {
+                            $this->roundParameters[$i]['state'] = null;
+                        }
+                    }
+                    for ($i = 0; $i < $indexOfCurrentStepPlayer; $i++) { 
+                        if ($this->roundParameters[$i]['state'] === 'collate' || $this->roundParameters[$i]['state'] === 'raise') {
+                            $this->roundParameters[$i]['state'] = null;
+                        }
                     }
                 }
-                for ($i = 0; $i < $indexOfLastRasingPlayer; $i++) { 
-                    if ($this->roundParameters[$i]['state'] === 'collate' || $this->roundParameters[$i]['state'] === 'raise') {
-                        $this->roundParameters[$i]['state'] = null;
-                    }
-                }
+                var_dump($this->roundParameters);
             }
-            var_dump($this->roundParameters);
+            
             return $playerOpenCardAbility;
         }
         

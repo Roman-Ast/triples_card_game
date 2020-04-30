@@ -55,7 +55,8 @@ class ChatSocket extends BaseSocket
                     foreach ($cardsRaw as $card) {
                         $cardsNormalizedForUser[] = [
                             "name" => $card->getName(),
-                            "suit" => $card->getSuit()
+                            "suit" => $card->getSuit(),
+                            "face" => $card->getFace()
                         ];
                     }
 

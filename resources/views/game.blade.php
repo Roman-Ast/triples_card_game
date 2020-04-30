@@ -20,7 +20,11 @@
         <div id="mainFrame">
             <div id="room">
                 <div id="table">
-                    <div id="cashBox"></div>
+                    <div id="internalRound"></div>
+                    <div id="cashBox">
+                        <div id="cashBoxSum"></div>
+                        <img src="{{URL::asset('images/table/chips24.png')}}" alt="card">
+                    </div>
                 </div>
             </div>
             <div id="myInterface">

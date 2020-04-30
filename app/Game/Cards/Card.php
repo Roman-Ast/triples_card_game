@@ -8,13 +8,20 @@ class Card
     private $name;
     private $suit;
     private $value;
+    private $face;
 
-    public function __construct(int $id, String $name, String $suit, int $value)
+    public function __construct(int $id, String $name, String $suit, int $value, String $face)
     {
         $this->id = $id;
         $this->name = $name;
         $this->suit = $suit;
         $this->value = $value;
+        $this->face = $face;
+    }
+
+    public function getFace()
+    {
+        return $this->face;
     }
 
     public function getId():int
@@ -47,17 +54,17 @@ class Card
         if ($cards[0]->getName() === $cards[1]->getName()) {
             array_push(
                 $cards, 
-                new Card(21, $cards[0]->getName(), $cards[0]->getSuit(), $cards[0]->getValue())
+                new Card(21, $cards[0]->getName(), $cards[0]->getSuit(), $cards[0]->getValue(), $cards[0]->getFace())
             );
         } else if ($cards[0]->getSuit() === $cards[1]->getSuit()) {
             array_push(
                 $cards, 
-                new Card(21, "Туз", $cards[0]->getSuit(), 11)
+                new Card(21, "Туз", $cards[0]->getSuit(), 11, $cards[0]->getFace())
             );
         } else {
             array_push(
                 $cards, 
-                new Card(21, "Туз", $cards[0]->getSuit(), 11)
+                new Card(21, "Туз", $cards[0]->getSuit(), 11, $cards[0]->getFace())
             );
         }
 
