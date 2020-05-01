@@ -104,6 +104,7 @@ class ChatSocket extends BaseSocket
                 "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
                 "bets" => $currentRound->getRoundBets(),
                 "winner" => $currentRound->getWinner(),
+                "savingPlayers" =>$currentRound->getSavingPlayers(),
                 "toCollate" => $currentRound->getNextStepPlayerToCollate()
             ];
 
@@ -117,7 +118,7 @@ class ChatSocket extends BaseSocket
 
             $dataAfterOpeningCards = [
                 "dataAfterOpeningCards" => true,
-                "playersPoints" => Game::getPlyersPointsAfterOpeningCards(),
+                "playersPoints" => Game::getPlayersPointsAfterOpeningCards(),
                 "winnerAfterOpening" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
             ];
 

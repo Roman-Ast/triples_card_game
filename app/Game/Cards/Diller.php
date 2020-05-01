@@ -42,7 +42,6 @@ class Diller
                 
                 $isTriples = self::checkForTriples($cardsWithProcessedSeven);
                 if ($isTriples) {
-                    var_dump($isTriples);
                     $player->setCardsValueAfterOpening($isTriples);
                     $cardsWithProcessedSeven = null;
                     continue;
@@ -78,19 +77,16 @@ class Diller
                 }
                 $isThreeSuitSame = self::checkForThreeSameSuit($cards);
                 if ($isThreeSuitSame) {
-                    var_dump($isThreeSuitSame);
                     $player->setCardsValueAfterOpening($isThreeSuitSame);
                     continue;;
                 }
                 $isTwoSuitSame = self::checkForTwoSameSuit($cards);
                 if ($isTwoSuitSame) {
-                    var_dump($isTwoSuitSame);
                     $player->setCardsValueAfterOpening($isTwoSuitSame);
                     continue;
                 }
                 $isOneSuit = self::checkOneSuit($cards);
                 if ($isOneSuit) {
-                    var_dump($isOneSuit);
                     $player->setCardsValueAfterOpening($isOneSuit);
                     continue;
                 }

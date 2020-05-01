@@ -42,7 +42,7 @@
                         
                         <div id="bet">
                             <button id="save" class="btn btn-sm btn-danger">Пасс</button>
-                            <button id="collate" class="btn btn-sm btn-warning">Уравнять</button>
+                            <button id="collate" class="btn btn-sm btn-warning">Сравнять: </button>
                             <div id="raise">
                                 <select id="betSum">
                                     <option disabled selected>сумма</option>
