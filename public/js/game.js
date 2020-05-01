@@ -9,6 +9,7 @@ const tableWidth = $('#table').width();
 const roomHeight = $('#room').height();
 const roomWidth = $('#room').width();
 
+
 $('#table')
     .css({'height': tableWidth})
     .css({'left': roomWidth / 2 - tableWidth / 2})
@@ -80,18 +81,46 @@ $("#takeCashBox").on('click', () => {
     conn.send(JSON.stringify(endRound));
 });
 
+$("#takeCashBoxAfterOpening").on('click', () => {
+    const endRound = {
+        endRoundAfterOpeningCards: true,
+    };
+
+    conn.send(JSON.stringify(endRound));
+});
+
+$('#shareCashBoxAfterOpening').on('click', () => {
+    const endRound = {
+        endRoundAfterOpeningCards: true,
+    };
+
+    conn.send(JSON.stringify(endRound));
+});
+
 
 conn.onmessage = (e) => {
     //все модальные окна исчезают через 5 секунд
-    setTimeout(() => {
-        $('#modal').hide();
-    }, 5000);
+    /*if ($('#modal').css('display') === 'block') {
+        const timeOut = setTimeout(() => {
+            $('#modal').hide();
+        }, 5000);
+    }*/
 
     const msgObject = JSON.parse(e.data);
+
+    //зaполняем селект шагами возможных ставок
+    for (let i = msgObject.defaultBet; i < 3000; i += msgObject.stepInBets) {
+        $('#betSum').append(`<option value="${i}">${i}</option>`);
+    }
+
+    $('#betSum').prop('disabled', false);
+    //очищаем modalBody
+    $('#modalBody').empty();
 
     if (msgObject.dataForRoundStarting) {
         
         //прячем кнопку "готов" на время раунда
+        $("#takeCashBox").css({"display":"none"});
         $("#radiness").css({"display":"none"});
         $("#bet").css({"display":"flex"});
 
@@ -144,6 +173,7 @@ conn.onmessage = (e) => {
         if (msgObject.name !== currentFirstWordPlayer) {
             $("#makeBet").attr("disabled", true);
             $("#save").attr("disabled", true);
+            $("#collate").attr("disabled", true);
             $("#betSum").prop("disabled", true);
         }
         //заполняем поле "баланс" текущего игрока
@@ -178,23 +208,13 @@ conn.onmessage = (e) => {
             cardsContainer.appendChild(cardContainer);
         });
 
-        //зaполняем селект шагами возможных ставок
-        for (let i = 50; i < 3000; i += 50) {
+    } else if (msgObject.roundStateAfterBetting) {
+        $(`#betSum`).empty();
+        //удаляем из селекта суммы ненужные options, так как меньше уже поставить нельзя
+        for (let i = msgObject.toCollate + msgObject.stepInBets; i <= 3000; i += msgObject.stepInBets) {
             $('#betSum').append(`<option value="${i}">${i}</option>`);
         }
-        //если раунд 1 то показываем "поднять" или "пасс"
-        if (msgObject.currentRoundId == 1) {
-            $('#collate').hide();
-        }
-        //если сумма raise не выбрана деактивируем кнопку "поднять"
-        if (!$('#betSum').val()) {
-            $('#makeBet').attr('disabled', true);
-        }
-        $('#betSum').on('change', function () {
-            $('#makeBet').removeAttr('disabled');
-        })
-
-    } else if (msgObject.roundStateAfterBetting) {
+        
         console.dir(msgObject);
         //показываем ставки игроков на столе
         $('.playerBetField').each(function (params) {
@@ -216,13 +236,11 @@ conn.onmessage = (e) => {
                 }
             });
         });
+
         //если есть возможность колировать(поддержать), то показываем соответствующую кнопку
         if (msgObject.toCollate) {
             if ($("#playerName").text() === msgObject.nextStepPlayer) {
-                const collateSum = document.createElement('span');
-                collateSum.id = 'collateSum';
                 $(collateSum).text(msgObject.toCollate);
-                $('#collate').append(collateSum);
                 $('#collate').show();
             }
         }
@@ -290,41 +308,64 @@ conn.onmessage = (e) => {
             }
         }
 
-        const lastBet = msgObject.lastBet;
         $("#playerBalance").html(msgObject.balanceOfAllPlayers[$("#playerName").html()]);
         
-
+        //блокируем кнопки тем, кто не ходит и разблокируем тому, чей ход
         if (msgObject.nextStepPlayer !== $("#playerName").html()) {
             $("#save").attr('disabled', true);
             $("#makeBet").attr('disabled', true);
             $('#betSum').prop('disabled', true);
+            $('#collate').attr('disabled', true);
         } else {
             $("#save").removeAttr('disabled');
+            $("#makeBet").removeAttr('disabled');
+            $('#collate').removeAttr('disabled');
             $('#betSum').prop('disabled', false);
-            //если сумма raise не выбрана деактивируем кнопку "поднять"
-            if (!$('#betSum').val()) {
-                $('#makeBet').attr('disabled', true);
-            }
-            $('#betSum').on('change', function () {
-                $('#makeBet').removeAttr('disabled');
-            })
         }
     } else if (msgObject.dataAfterOpeningCards) {
+        //показываем все карты всем игрокам, чтобы убедиться в победителе
+
+        $('#modalBody').empty();
         console.dir(msgObject);
+        if (msgObject.winnerAfterOpening.length === 1) {
+            $("#openCards").css({"display": "none"});
+            $("#takeCashBoxAfterOpening").show({"display": "block"});
 
+            $('#modalBody').append(
+                `<div>Победитель: ${msgObject.winnerAfterOpening[0]}</div>`
+            );
 
+            $('#modalBody').append(
+                `<div>Касса: ${msgObject.totalCashBox}</div>`
+            );
+
+            $('#modal').show();
+        } else {
+            $("#openCards").css({"display": "none"});
+            $('#shareCashBoxAfterOpening').show();
+
+            $('#modalBody').append(`Победители:`);
+
+            msgObject.winnerAfterOpening.forEach(winner => {
+                $('#modalBody').append(winner);
+            });
+        
+        }
     }else if (msgObject.isRoundEndWithoutShowingUp) {
         $('#modalBody').append(`<div>победитель: ${msgObject.playerTakingConWithoutShowingUp}</div>`);
-
+        $('#modal').show();
     } else if (msgObject.nextRound) {
         //очищаем поле карты у игрока
         $('#myCards').empty();
+        $('.playerBetField').empty();
         $('#cashBoxSum').empty();
         $('#modalBody').empty();
         $('#otherPlayers').empty();
-        alert('next round');
+        $('#modalBody').append(`<div>следующий раунд</div>`);
         $("#radiness").css({"display":"block"});
         $("#takeCashBox").css({"display":"none"});
+        $("#takeCashBoxAfterOpening").css({"display":"none"});
+        $("#shareCashBoxAfterOpening").css({"display":"none"});
         $("button").each(function () {
            $(this).removeAttr('disabled'); 
         });

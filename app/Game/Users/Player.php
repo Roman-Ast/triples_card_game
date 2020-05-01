@@ -5,6 +5,7 @@ namespace App\Game\Users;
 use App\Game\Game;
 use App\Game\Cards\Card;
 use Ratchet\ConnectionInterface;
+use App\User;
 
 class Player
 {
@@ -116,9 +117,10 @@ class Player
         return $this->id;
     }
 
-    public function setBalance(int $balance)
+    public function setBalance()
     {
-        $this->balance = $balance;
+        $userFromDB = User::find($this->id);
+        $this->balance = $userFromDB->balance;
     }
 
     public function getCardsValueAfterOpening()

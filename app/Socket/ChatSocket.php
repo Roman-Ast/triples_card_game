@@ -41,7 +41,7 @@ class ChatSocket extends BaseSocket
                     if ($player->getConnection() == $player_sender) {
                         $player->setId((int)$player_data["id"]);
                         $player->setName($player_data["name"]);
-                        $player->setBalance((int)$player_data["balance"]);
+                        $player->setBalance();
                         $player->readyToPlay();
                     }
                 }
@@ -72,7 +72,7 @@ class ChatSocket extends BaseSocket
                         "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
                         "currentRoundId" => Game::getCurrentRoundId(),
                         "defaultBet" => Game::getDefaultBet(),
-                        
+                        "stepInBets" => Game::getStepInBets()
                     ];
                     $player->getConnection()->send(json_encode($dataForRoundStarting));
                 }
@@ -101,6 +101,7 @@ class ChatSocket extends BaseSocket
                 "isRoundEndWithoutShowingUp" => $currentRound->isRoundEndWithoutShowingUp(),
                 "balanceOfAllPlayers" => Game::getBalanceOfAllPlayers(),
                 "defaultBet" => Game::getDefaultBet(),
+                "stepInBets" => Game::getStepInBets(),
                 "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
                 "bets" => $currentRound->getRoundBets(),
                 "winner" => $currentRound->getWinner(),
@@ -118,6 +119,9 @@ class ChatSocket extends BaseSocket
 
             $dataAfterOpeningCards = [
                 "dataAfterOpeningCards" => true,
+                "totalCashBox" => 
+                    Game::getCurrentRound()->getRoundCashBox() +
+                    Game::getCurrentRound()->getSumOfDeafultBets(),
                 "playersPoints" => Game::getPlayersPointsAfterOpeningCards(),
                 "winnerAfterOpening" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
             ];
@@ -137,6 +141,18 @@ class ChatSocket extends BaseSocket
             
             foreach ($this->clients as $client) {
                 $client->send(json_encode($dataAfterEndingRoundWithoutShowingUp));
+            }
+        } else if (isset($player_data['endRoundAfterOpeningCards']) && $player_data['endRoundAfterOpeningCards']) {
+            
+            Game::endRoundAfterOpeningCards();
+
+            $dataAfterEndingRoundAfterOpeningCards = [
+                "nextRound" => true,
+                "winner" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
+            ];
+            
+            foreach ($this->clients as $client) {
+                $client->send(json_encode($dataAfterEndingRoundAfterOpeningCards));
             }
         }
         

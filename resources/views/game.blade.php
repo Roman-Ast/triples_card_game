@@ -37,21 +37,25 @@
                 <div id="controllers">
                     <div id="buttons">
                         <div id="radiness">
-                            <button id="startPlay" class="btn btn-sm btn-primary">Готов</button>
+                            <button id="startPlay" class="btn btn-sm btn-primary">Начать раунд</button>
                         </div>
                         
                         <div id="bet">
                             <button id="save" class="btn btn-sm btn-danger">Пасс</button>
-                            <button id="collate" class="btn btn-sm btn-warning">Сравнять: </button>
+                            <button id="collate" class="btn btn-sm btn-warning">
+                                Сравнять:
+                                <span id="collateSum"></span>
+                            </button>
                             <div id="raise">
-                                <select id="betSum">
-                                    <option disabled selected>сумма</option>
-                                </select>
+                                <select id="betSum"></select>
                                 <button id="makeBet" class="btn btn-sm btn-success">Поднять</button>
                             </div>
                         </div>
                         <button id="openCards" class="btn btn-sm btn-primary">Открыть карты</button>
                         <button id="takeCashBox" class="btn btn-sm btn-success">Забрать не вскрываясь</button>
+                        <button id="takeCashBoxAfterOpening" class="btn btn-sm btn-success">Забрать кассу</button>
+                        <button id="shareCashBoxAfterOpening" class="btn btn-sm btn-success">Разделить кассу</button>
+                        <button id="svara" class="btn btn-sm btn-danger" disabled>Свара</button>
                     </div>
                 </div>
                 <div id="myCards">

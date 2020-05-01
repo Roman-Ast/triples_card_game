@@ -142,6 +142,10 @@
         align-items: center;
         width: 100%;
     }
+    #collate{
+        color: #fff;
+        display: none;
+    }
     #raise{
         display: flex;
         flex-direction: column;
@@ -150,6 +154,15 @@
         display: none;
     }
     #takeCashBox{
+        display: none;
+    }
+    #takeCashBoxAfterOpening{
+        display: none;
+    }
+    #shareCashBoxAfterOpening{
+        display: none;
+    }
+    #svara{
         display: none;
     }
     #myCards{

@@ -12,6 +12,7 @@ class Round
     private $id;
     private const DEFAULT_BET = 50;
     private $defaultBets = [];
+    private $sumOfDefaultBets = 0;
     private $bets = [];
     private $cashBox = 0;
     private $distributor;
@@ -43,6 +44,11 @@ class Round
         $this->setDistributor();
         $this->setFirstWordPlayer();
         $this->setInitRoundParameters();
+    }
+
+    public function getSumOfDeafultBets()
+    {
+        return $this->sumOfDefaultBets;
     }
 
     public function getNextStepPlayerToCollate()
@@ -79,7 +85,7 @@ class Round
         }
         //добавляем дефолтные ставки к общей сумме кона
         foreach ($this->defaultBets as $item) {
-            $this->cashBox += $item['defaultBet'];
+            $this->sumOfDefaultBets += $item['defaultBet'];
         }
     }
 
@@ -197,7 +203,7 @@ class Round
                     break;
                 }
             }
-            if (!$nextStepPlayerResourceId) {
+            if (!isset($nextStepPlayerResourceId)) {
                 for ($i = 0; $i < $currentStepPlayerIndex; $i ++) { 
                     if ($this->roundParameters[$i]['state'] !== 'save') {
                         $nextStepPlayerResourceId = $this->roundParameters[$i]['resourceId'];
@@ -228,7 +234,8 @@ class Round
         }
         
         //суммируем в общую кассу ставкиы
-        $this->cashBox += $bet;
+        $this->cashBox = \collect($this->bets)->sum();
+        var_dump($this->cashBox);
 
         //игрок который ходит сейчас
         $players = Game::getAllPLayers();
@@ -404,7 +411,7 @@ class Round
                     }
                 }
             } else {
-                if ($playerSteping->getId() === $this->lastSavingPlayer->getId()) {
+                if (isset($this->lastSavingPlayer) && $playerSteping->getId() === $this->lastSavingPlayer->getId()) {
                     $playerOpenCardAbility = $this->lastRasingPlayer->getConnResourceId();
                 } else {
                     $playerOpenCardAbility = $this->lastCollatingPlayer->getConnResourceId();
@@ -469,23 +476,31 @@ class Round
 
     public function getWinnerAfterOpeningCards()
     {
-        return $this->winnerAfterOpeningCards;
+        if (count($this->winnerAfterOpeningCards) === 1) {
+            return [$this->winnerAfterOpeningCards[0]->getName()];
+        } else {
+            foreach ($this->winnerAfterOpeningCards as $player) {
+                $playersWinners[] = $player->getName();
+            }
+
+            return $playersWinners;
+        }
+        
     }
 
     public function setWinnerAfterOpeningCards()
     {
         $players = Game::getAllPlayers();
-        $maxValue = $players[0]->getCardsValueAfterOpening();
-        $playerWithMaxValue = $players[0];
+        
+        $maxValue = \collect(Game::getPlayersPointsAfterOpeningCards())->max('points');
 
         foreach ($players as $player) {
-            if ($player->getCardsValueAfterOpening() > $maxValue) {
-                $maxValue = $player->getCardsValueAfterOpening();
-                $playerWithMaxValue = $player;
+            if ($player->getCardsValueAfterOpening() === $maxValue) {
+                $playersWithMaxPoints[] = $player;
             }
         }
 
-        $this->winnerAfterOpeningCards = $player;
+        $this->winnerAfterOpeningCards = $playersWithMaxPoints;
     }
 
     public function getPlayerTakingConWithoutShowingUp()
@@ -519,14 +534,71 @@ class Round
                 $userFromDb = User::where('id', $this->winner->getId())->first();
                 $userFromDb->balance = $this->winner->getBalance() + $this->cashBox;
                 $userFromDb->save();
+                $player->setBalance();
             } else {
                 $userFromDb = User::where('id', $player->getId())->first();
                 $userFromDb->balance = $player->getBalance();
                 $userFromDb->save();
+                $player->setBalance();
             }
         }
 
         $this->endRoundWithoutShowingUp = true;
+
+        Game::endCurrentRound();
+    }
+
+    public function endRoundAfterOpeningCards()
+    {
+        $players = Game::getAllPlayers();
+
+        if (count($this->winnerAfterOpeningCards) === 1) {
+            foreach ($players as $player) {
+                if ($player->getConnResourceId() == $this->winnerAfterOpeningCards[0]->getConnResourceId()) {
+                    $this->winner = $player;
+                }
+            }
+            var_dump($this->cashBox);
+            var_dump($this->winner->getBalance());
+            foreach ($players as $player) {
+                if ($player->getId() == $this->winner->getId()) {
+                    $userFromDb = User::where('id', $this->winner->getId())->first();
+                    $userFromDb->balance = 
+                        $this->winner->getBalance() + $this->cashBox + $this->sumOfDefaultBets;
+                    $userFromDb->save();
+                    $player->setBalance();
+                } else {
+                    $userFromDb = User::where('id', $player->getId())->first();
+                    $userFromDb->balance = $player->getBalance();
+                    $userFromDb->save();
+                    $player->setBalance();
+                }
+            }
+    
+            
+        } else {
+            $arrOfIdsOfWInners = [];
+
+            foreach ($this->winnerAfterOpeningCards as $player) {
+                $arrOfIdsOfWInners[] = $player->getId();
+            }
+
+            foreach ($players as $player) {
+                if (in_array($player->getId(), $arrOfIdsOfWInners)) {
+                    $userFromDb = User::where('id', $player->getId())->first();
+                    $userFromDb->balance = $player->getBalance()+ round(($this->cashBox + $this->sumOfDefaultBets)/ count($arrOfIdsOfWInners));
+                    $userFromDb->save();
+                    $player->setBalance();
+                } else {
+                    $userFromDb = User::where('id', $player->getId())->first();
+                    $userFromDb->balance = $player->getBalance();
+                    $userFromDb->save();
+                    $player->setBalance();
+                }
+            }
+        }
+        
+        $this->endRoundAfterOpeningCarts = true;
 
         Game::endCurrentRound();
     }

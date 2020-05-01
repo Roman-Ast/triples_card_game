@@ -16,6 +16,12 @@ class Game
     private static $currentDistributor;
     private static $first_word_player;
     private const DEFAULT_BET = 50;
+    private const STEP_IN_BETS = 10;
+
+    public static function getStepInBets()
+    {
+        return self::STEP_IN_BETS;
+    }
 
     public static function addPlayer(Player $player)
     {
@@ -120,6 +126,11 @@ class Game
     public static function endRoundWithoutShowingUp()
     {
         self::$currentRound->endRoundWithoutShowingUp();
+    }
+
+    public static function endRoundAfterOpeningCards()
+    {
+        self::$currentRound->endRoundAfterOpeningCards();
     }
 
     public static function getBalanceOfAllPlayers()
