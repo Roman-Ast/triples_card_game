@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Game\Cards;
+namespace App\GameRequisits\Cards;
 
 class Card
 {

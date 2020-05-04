@@ -1,9 +1,12 @@
 <?php
 
-namespace App\Game;
+namespace App\GameRequisits;
 
-use App\Game\Round;
-use App\Game\Users\Player;
+use App\GameRequisits\Round;
+use App\GameRequisits\Users\Player;
+use App\Game as Game_model;
+use App\Tax;
+use DB;
 
 class Game
 {
@@ -15,8 +18,25 @@ class Game
     private static $currentRound;
     private static $currentDistributor;
     private static $first_word_player;
+    private static $lastRoundWinner;
     private const DEFAULT_BET = 50;
     private const STEP_IN_BETS = 10;
+    private const TAX = 10;
+
+    public static function setLastRoundWinner(array $winner)
+    {
+        self::$lastRoundWinner = $winner;
+    }
+
+    public static function getLastRoundWinner() :array
+    {
+        return self::$lastRoundWinner;
+    }
+
+    public static function getTax()
+    {
+        return self::TAX;
+    }
 
     public static function getStepInBets()
     {
@@ -133,6 +153,11 @@ class Game
         self::$currentRound->endRoundAfterOpeningCards();
     }
 
+    public static function shareCashBoxAfterOpening()
+    {
+        self::$currentRound->shareCashBoxAfterOpening();
+    }
+
     public static function getBalanceOfAllPlayers()
     {
         foreach (self::$players as $player) {
@@ -142,26 +167,31 @@ class Game
         return $balanceOfAllPlayers;
     }
 
-    public static function endCurrentRound()
-    {
-        self::$connectAbility = true;
-        self::$allPlayersReady = false;
-
-        foreach (self::$players as $player) {
-            $player->changeRadinessAfterEndingRound();
-            $player->dropCards();
-        }
-    }
-
     public static function getAllPlayersIdsNormalizedForGame()
     {
         foreach (self::$players as $player) {
             $normalizedPlayers[] = [
-                'id' => $player->getid(),
+                'id' => $player->getId(),
                 'balance' => $player->getBalance()
             ];
         }
         return $normalizedPlayers;
+    }
+
+    public static function getAllPlayersCards()
+    {
+        foreach (self::$players as $player) {
+            if (!in_array($player->getName(), self::getCurrentRound()->getSavingPlayers())) {
+                $normalized[] = [
+                    'name' => $player->getName(),
+                    'cards' => array_map(function($card) {
+                        return $card->getFace();
+                    }, $player->getCardsOnHand())
+                ];
+            }
+        }
+       
+        return $normalized;
     }
 
     public static function getPlayersPointsAfterOpeningCards()
@@ -175,5 +205,27 @@ class Game
             }
         }
         return $normalizedPoints;
+    }
+
+    public static function endCurrentRound()
+    {
+        
+        /*$taxSum = (int)self::getCurrentRound()->getTaxSum();
+        $roundId = (int)self::getCurrentRound()->getId();
+        $game = DB::table('game')->orderBy('id', 'desc')->first();
+        $tax = new Tax();
+        $tax->game_number = $game->id;
+        $tax->round_number = $roundId;
+        $tax->sum = $taxSum;
+
+        $tax->save();*/
+
+        self::$connectAbility = true;
+        self::$allPlayersReady = false;
+
+        foreach (self::$players as $player) {
+            $player->changeRadinessAfterEndingRound();
+            $player->dropCards();
+        }
     }
 }

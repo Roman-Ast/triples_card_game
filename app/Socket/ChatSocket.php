@@ -4,13 +4,14 @@ namespace App\Socket;
 
 use App\Socket\Base\BaseSocket;
 use Ratchet\ConnectionInterface;
-use App\Game\Users\Player;
-use App\Game\Game;
+use App\GameRequisits\Users\Player;
+use App\GameRequisits\Game;
 
 
 class ChatSocket extends BaseSocket
 {
     protected $clients;
+    private $countOfClickingPlayers = [];
 
     public function __construct()
     {
@@ -22,10 +23,11 @@ class ChatSocket extends BaseSocket
         if (!Game::checkConnectAbility()) {
             return;
         }
+
         $player = new Player($connection);
 
         Game::addPlayer($player);
-
+        
         $this->clients->attach($connection);
         echo "connected {$connection->resourceId}\n";
     }
@@ -35,13 +37,30 @@ class ChatSocket extends BaseSocket
         $player_data = json_decode($msg, true);
         
         if (Game::checkConnectAbility()) {
-                
-            if (isset($player_data['readyToPlay']) && $player_data['readyToPlay']) {
+            if (isset($player_data['checkConnection']) && $player_data['checkConnection']) {
                 foreach (Game::getAllPlayers() as $player) {
                     if ($player->getConnection() == $player_sender) {
                         $player->setId((int)$player_data["id"]);
                         $player->setName($player_data["name"]);
                         $player->setBalance();
+                    }
+                }
+                $connectedPlayers = [];
+                foreach (Game::getAllPlayers() as $player) {
+                    $connectedPlayers[] = $player->getName();
+                }
+    
+                $checkConnectionData = [
+                    'checkConnection' => true,
+                    'connectedPlayers' => $connectedPlayers
+                ];
+                
+                
+                $player_sender->send(json_encode($checkConnectionData));
+                
+            }else if (isset($player_data['readyToPlay']) && $player_data['readyToPlay']) {
+                foreach (Game::getAllPlayers() as $player) {
+                    if ($player->getConnection() == $player_sender) {
                         $player->readyToPlay();
                     }
                 }
@@ -78,13 +97,93 @@ class ChatSocket extends BaseSocket
                 }
             }
             
-        } 
+        } else {
+            //если отправитель не в списке игроков
+            $playersIds = [];
+            foreach (Game::getAllPlayers() as $player) {
+                $playersIds[] = $player->getId();
+            }
+        
+            if (isset($player_data['id'])) {
+                if (!in_array($player_data['id'], $playersIds)) {
+                    $player_sender->send(json_encode([
+                        'connection_error' => true,
+                        'msg' => "Раунд в процессе, Вы сможете подключиться по завершении раунда..."
+                    ]));
+                } else {
+                    var_dump('нашел айди в подключенных');
+                    foreach (Game::getAllPlayers() as $player) {
+                        if ((int)$player->getId() === (int)$player_data['id']) {
+                            var_dump('setconnection');
+                            $player->setConnection($player_sender);
+                        }
+                    }
+
+                    $reconnectingPlayer = null;
+                    foreach (Game::getAllPlayers() as $player) {
+                        if ($player->getConnResourceId() === $player_sender->resourceId) {
+                            var_dump('define player');
+                            $reconnectingPlayer = $player;
+                        }
+                    }
+
+                    $cardsNormalizedForUser = [];
+                    foreach ($reconnectingPlayer->getCardsOnHand() as $card) {
+                        $cardsNormalizedForUser[] = [
+                            "name" => $card->getName(),
+                            "suit" => $card->getSuit(),
+                            "face" => $card->getFace()
+                        ];
+                    }
+
+                    $currentRound = Game::getCurrentRound();
+
+                    $roundStateAfterReconnect = [
+                        "reconnect" => true,
+                        "cards" => $cardsNormalizedForUser,
+                        "name" =>$player->getName(),
+                        "balance" =>$player->getBalance(),
+                        "allPlayers" => Game::getAllPlayersNormalizedForGame(),
+                        "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
+                        "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
+                        "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
+                        "currentRoundId" => Game::getCurrentRoundId(),
+                        "currentDistributor" => Game::getCurrentDistributor()->getName(),
+                        "currentStepPlayer" => $currentRound->getCurrentStepPlayer()->getName(),
+                        "nextStepPlayer" => $currentRound->getNextStepPlayer()->getName(),
+                        "playerOpenCardAbility" => $currentRound->getPlayerOpenCardAbility(),
+                        "lastBet" => $currentRound->getLastBet(),
+                        "playerTakingConWithoutShowingUp" => $currentRound->getPlayerTakingConWithoutShowingUp(),
+                        "roundCashBox" => $currentRound->getRoundCashBox(),
+                        "isRoundEndWithoutShowingUp" => $currentRound->isRoundEndWithoutShowingUp(),
+                        "balanceOfAllPlayers" => Game::getBalanceOfAllPlayers(),
+                        "defaultBet" => Game::getDefaultBet(),
+                        "stepInBets" => Game::getStepInBets(),
+                        "bets" => $currentRound->getRoundBets(),
+                        "winner" => $currentRound->getWinner(),
+                        "savingPlayers" =>$currentRound->getSavingPlayers(),
+                        "toCollate" => $currentRound->getNextStepPlayerToCollate()
+                    ];
+
+                    $reconnectingPlayer->getConnection()->send(json_encode($dataAboutRoundState));
+                }
+            }
+        }
         
         if (isset($player_data['makingBet']) && $player_data['makingBet']) {
             
             foreach (Game::getAllPlayers() as $player) {
                 if ($player->getConnection() == $player_sender) {
-                    $player->makeBet((int)$player_data["betSum"]);
+                    $response = $player->makeBet((int)$player_data["betSum"]);
+
+                    if (!$response) {
+                        $balanceError = [
+                            'balanceError' => true,
+                            'msg' => 'Ваша ставка превышает Ваш баланс'
+                        ];
+
+                        $player_sender->send(json_encode($balanceError));
+                    }
                 }
             }
 
@@ -123,7 +222,8 @@ class ChatSocket extends BaseSocket
                     Game::getCurrentRound()->getRoundCashBox() +
                     Game::getCurrentRound()->getSumOfDeafultBets(),
                 "playersPoints" => Game::getPlayersPointsAfterOpeningCards(),
-                "winnerAfterOpening" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
+                "winnerAfterOpening" => Game::getCurrentRound()->getWinnerAfterOpeningCards(),
+                "allCards" => Game::getAllPlayersCards()
             ];
 
             foreach ($this->clients as $client) {
@@ -154,15 +254,30 @@ class ChatSocket extends BaseSocket
             foreach ($this->clients as $client) {
                 $client->send(json_encode($dataAfterEndingRoundAfterOpeningCards));
             }
+        } else if (isset($player_data['shareCashBoxAfterOpening']) && $player_data['shareCashBoxAfterOpening']) {
+            
+            Game::shareCashBoxAfterOpening();
+
+            $dataAfterEndingRoundAfterOpeningCards = [
+                "nextRound" => true,
+                "winner" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
+            ];
+                
+            foreach ($this->clients as $client) {
+                $client->send(json_encode($dataAfterEndingRoundAfterOpeningCards));
+            }
+
+            $countOfClickingPlayers = [];
+            
         }
-        
-        
-        
-        
     }
 
     public function onClose(ConnectionInterface $conn)
     {
+        if (empty($this->clients)) {
+            $game = new App\Game();
+            $game->save();
+        }
         $this->clients->detach($conn);
 
         echo "Client {$conn->resourceId} has been disconnected \n";

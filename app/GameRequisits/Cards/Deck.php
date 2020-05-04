@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Game\Cards;
+namespace App\GameRequisits\Cards;
 
-use App\Game\Cards\Card;
+use App\GameRequisits\Cards\Card;
 use App\Socket\ChatSocket;
-use App\Game\Game;
+use App\GameRequisits\Game;
 
 class Deck
 {

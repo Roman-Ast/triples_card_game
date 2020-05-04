@@ -10,6 +10,13 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     </head>
     <body>
+        <div id="frameForAllPlayersCards">
+            <div id="innerFrame">
+                <div id="frameForAllPlayersCardsClose">
+                    <span>&CircleTimes;</span>
+                </div>
+            </div>
+        </div>
         <div id="modal">
             <div id="modalHeader">Детали раунда</div>
             <div id="modalBody"></div>
@@ -19,6 +26,13 @@
         </div>
         <div id="mainFrame">
             <div id="room">
+                <div id="waitingForStart">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <div>Ждем других игроков...</div>
+                </div>
+                <div id="connectedPlayers"></div>
                 <div id="table">
                     <div id="internalRound"></div>
                     <div id="cashBox">
@@ -36,6 +50,7 @@
                 </div>
                 <div id="controllers">
                     <div id="buttons">
+                        <button id="connectToGame" class="btn btn-sm btn-primary">Подключиться</button>
                         <div id="radiness">
                             <button id="startPlay" class="btn btn-sm btn-primary">Начать раунд</button>
                         </div>
@@ -48,14 +63,14 @@
                             </button>
                             <div id="raise">
                                 <select id="betSum"></select>
-                                <button id="makeBet" class="btn btn-sm btn-success">Поднять</button>
+                                <button id="makeBet" class="btn btn-sm btn-primary">Поднять</button>
                             </div>
                         </div>
                         <button id="openCards" class="btn btn-sm btn-primary">Открыть карты</button>
                         <button id="takeCashBox" class="btn btn-sm btn-success">Забрать не вскрываясь</button>
                         <button id="takeCashBoxAfterOpening" class="btn btn-sm btn-success">Забрать кассу</button>
-                        <button id="shareCashBoxAfterOpening" class="btn btn-sm btn-success">Разделить кассу</button>
-                        <button id="svara" class="btn btn-sm btn-danger" disabled>Свара</button>
+                        <button id ="shareCashBoxAfterOpening" class="btn btn-sm btn-success ">Разделить кассу</button>
+                        <button id="svara" class="btn btn-sm btn-danger " disabled>Свара</button>
                     </div>
                 </div>
                 <div id="myCards">
@@ -71,6 +86,6 @@
 
         <script src="{{ URL::asset('js/jquery_min.js') }}"></script>
         <script src="{{ URL::asset('js/game.js') }}" type="module"></script>
-        
+        <script src="{{ URL::asset('js/calc.js') }}" async type="module"></script>
     </body>
 </html>

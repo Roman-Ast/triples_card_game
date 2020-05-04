@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Game\Users;
+namespace App\GameRequisits\Users;
 
-use App\Game\Game;
-use App\Game\Cards\Card;
+use App\GameRequisits\Game;
+use App\GameRequisits\Cards\Card;
 use Ratchet\ConnectionInterface;
 use App\User;
 
@@ -85,6 +85,11 @@ class Player
     public function getConnection()
     {
         return $this->conn;
+    }
+
+    public function setConnection(ConnectionInterface $conn)
+    {
+        $this->conn = $conn;
     }
 
     public function getCardsOnHand()

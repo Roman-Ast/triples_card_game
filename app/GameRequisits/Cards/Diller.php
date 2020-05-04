@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Game\Cards;
+namespace App\GameRequisits\Cards;
 
-use App\Game\Cards\Deck;
-use App\Game\Game;
+use App\GameRequisits\Cards\Deck;
+use App\GameRequisits\Game;
 
 class Diller
 {
@@ -13,6 +13,10 @@ class Diller
     {
         $deckRaw = new Deck();
         $deck = $deckRaw->getDeck();
+
+        shuffle($deck);
+        shuffle($deck);
+        shuffle($deck);
 
         foreach (Game::getAllPlayers() as $player) {
             for ($i = 0; $i < self::NUMBER_OF_CARDS_ON_HAND; $i++) {
@@ -75,6 +79,11 @@ class Diller
                 if ($isThreeSuitSame) {
                     $player->setCardsValueAfterOpening($isThreeSuitSame);
                     continue;;
+                }
+                $isTwoAces = self::checkTwoAces($cards);
+                if ($isTwoAces) {
+                    $player->setCardsValueAfterOpening($isTwoAces);
+                    continue;
                 }
                 $isTwoSuitSame = self::checkForTwoSameSuit($cards);
                 if ($isTwoSuitSame) {
@@ -165,6 +174,18 @@ class Diller
         }
         
         return false;
+    }
+
+    private static function checkTwoAces(array $cards) {
+        $aces = 0;
+
+        foreach ($cards as $card) {
+            if ($card->getName() === 'Туз') {
+                $aces += 1;
+            }
+        }
+
+        return $aces < 2 ? false : 22;
     }
 
     private static function checkOneSuit(array $cards) {
