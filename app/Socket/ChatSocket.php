@@ -165,7 +165,7 @@ class ChatSocket extends BaseSocket
                         "toCollate" => $currentRound->getNextStepPlayerToCollate()
                     ];
 
-                    $reconnectingPlayer->getConnection()->send(json_encode($dataAboutRoundState));
+                    $reconnectingPlayer->getConnection()->send(json_encode($roundStateAfterReconnect));
                 }
             }
         }

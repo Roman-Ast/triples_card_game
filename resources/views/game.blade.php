@@ -53,6 +53,7 @@
                         <button id="connectToGame" class="btn btn-sm btn-primary">Подключиться</button>
                         <div id="radiness">
                             <button id="startPlay" class="btn btn-sm btn-primary">Начать раунд</button>
+                            <button id="connect" class="btn btn-sm btn-primary">Подключиться</button>
                         </div>
                         
                         <div id="bet">
@@ -86,6 +87,8 @@
 
         <script src="{{ URL::asset('js/jquery_min.js') }}"></script>
         <script src="{{ URL::asset('js/game.js') }}" type="module"></script>
-        <script src="{{ URL::asset('js/calc.js') }}" async type="module"></script>
+        <script src="{{ URL::asset('js/gameEventsHandlers/onRoundStart.js') }}" async type="module"></script>
+        <script src="{{ URL::asset('js/gameEventsHandlers/onCheckConnection.js') }}" type="module"></script>
+        <script src="{{ URL::asset('js/gameEventsHandlers/onBalanceError.js') }}" type="module"></script>
     </body>
 </html>
