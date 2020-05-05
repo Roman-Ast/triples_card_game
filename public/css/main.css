@@ -10,7 +10,7 @@
     }
     #innerFrame{
         color: #fff;
-        background-color: rgba(0, 0, 0, .9);
+        background-color: rgba(18, 111, 75, .9);;
         position: absolute;
         top: 0;
         left: 0;
@@ -201,6 +201,9 @@
         justify-content: space-evenly;
         align-items: center;
         width: 100%;
+    }
+    #startPlay{
+        display: none;
     }
     #collate{
         display: none;

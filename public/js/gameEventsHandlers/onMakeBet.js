@@ -2,7 +2,7 @@ const onMakeBet = (msgObject) => {
     $(`#betSum`).empty();
     //удаляем из селекта суммы ненужные options, так как меньше уже поставить нельзя
     if (!msgObject.toCollate) {
-        for (let i = msgObject.defaultBet + msgObject.stepInBets; i <= 3000; i += msgObject.stepInBets) {
+        for (let i = msgObject.defaultBet; i <= 3000; i += msgObject.stepInBets) {
             $('#betSum').append(`<option value="${i}">${i}</option>`);
         }
     } else {
@@ -98,17 +98,17 @@ const onMakeBet = (msgObject) => {
         
         $('#modal').show();
         $("#bet").hide();
-        if ($("#playerName").html() === msgObject.playerTakingConWithoutShowingUp) {
+        if ($("#playerName").text() === msgObject.playerTakingConWithoutShowingUp) {
             //показываем кнопку "забрать кон"
             $("#takeCashBox").css({"display": "block"});
             $("#bet").hide();
         }
     }
 
-    $("#playerBalance").html(msgObject.balanceOfAllPlayers[$("#playerName").html()]);
+    $("#playerBalance").html(msgObject.balanceOfAllPlayers[$("#playerName").text()]);
     
     //блокируем кнопки тем, кто не ходит и разблокируем тому, чей ход
-    if (msgObject.nextStepPlayer !== $("#playerName").html()) {
+    if (msgObject.nextStepPlayer !== $("#playerName").text()) {
         $("#save").attr('disabled', true);
         $("#makeBet").attr('disabled', true);
         $('#betSum').prop('disabled', true);

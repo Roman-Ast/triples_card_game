@@ -219,7 +219,7 @@ class Round
     {
         //определяем индекс ходившего игрока
         foreach ($this->roundParameters as $index => $player) {
-            if ($player['resourceId'] === $this->currentStepPlayer->getConnResourceId()) {
+            if ($player['id'] === $this->currentStepPlayer->getId()) {
                 $currentStepPlayerIndex = $index;
             }
         }
@@ -227,28 +227,28 @@ class Round
         if ($currentStepPlayerIndex === 0) {
             for ($i = 1; $i < count($this->roundParameters); $i ++) { 
                 if ($this->roundParameters[$i]['state'] !== 'save') {
-                    $nextStepPlayerResourceId = $this->roundParameters[$i]['resourceId'];
+                    $nextStepPlayerId = $this->roundParameters[$i]['id'];
                     break;
                 }
             }
         } else if ($currentStepPlayerIndex === count($this->roundParameters) - 1) {
             for ($i = 0; $i < count($this->roundParameters); $i ++) { 
                 if ($this->roundParameters[$i]['state'] !== 'save') {
-                    $nextStepPlayerResourceId = $this->roundParameters[$i]['resourceId'];
+                    $nextStepPlayerId = $this->roundParameters[$i]['id'];
                     break;
                 }
             }
         } else {
             for ($i = $currentStepPlayerIndex + 1; $i < count($this->roundParameters); $i ++) { 
                 if ($this->roundParameters[$i]['state'] !== 'save') {
-                    $nextStepPlayerResourceId = $this->roundParameters[$i]['resourceId'];
+                    $nextStepPlayerId = $this->roundParameters[$i]['id'];
                     break;
                 }
             }
-            if (!isset($nextStepPlayerResourceId)) {
+            if (!isset($nextStepPlayerId)) {
                 for ($i = 0; $i < $currentStepPlayerIndex; $i ++) { 
                     if ($this->roundParameters[$i]['state'] !== 'save') {
-                        $nextStepPlayerResourceId = $this->roundParameters[$i]['resourceId'];
+                        $nextStepPlayerId = $this->roundParameters[$i]['id'];
                         break;
                     }
                 }
@@ -257,7 +257,7 @@ class Round
 
         //находим в игроках данный resourceId
         foreach (Game::getAllPlayers() as $player) {
-            if ($player->getConnResourceId() === $nextStepPlayerResourceId) {
+            if ($player->getId() === $nextStepPlayerId) {
                 return $player;
             }
         }
@@ -283,7 +283,7 @@ class Round
         $this->currentStepPlayer = $playerSteping;
 
         foreach ($players as $index => $player) {
-            if ($player == $this->currentStepPlayer) {
+            if ($player->getId() == $this->currentStepPlayer->getId()) {
                 $currentStepPlayerIndex = $index;
             }
         }
@@ -293,7 +293,7 @@ class Round
             $this->lastRasingPlayer = $playerSteping;
 
             foreach ($this->roundParameters as $index => $player) {
-                if ($playerSteping->getConnResourceId() == $player['resourceId']) {
+                if ($playerSteping->getId() == $player['id']) {
                     $this->roundParameters[$index]['state'] = 'raise';
                 }
             }
@@ -301,7 +301,7 @@ class Round
             $this->lastCollatingPlayer = $playerSteping;
 
             foreach ($this->roundParameters as $index => $player) {
-                if ($playerSteping->getConnResourceId() == $player['resourceId']) {
+                if ($playerSteping->getId() == $player['id']) {
                     $this->roundParameters[$index]['state'] = 'collate';
                 }
             }
@@ -309,7 +309,7 @@ class Round
             $this->lastSavingPlayer = $playerSteping;
 
             foreach ($this->roundParameters as $index => $player) {
-                if ($playerSteping->getConnResourceId() == $player['resourceId']) {
+                if ($playerSteping->getId() == $player['id']) {
                     $this->roundParameters[$index]['state'] = 'save';
                 }
             }
@@ -328,7 +328,7 @@ class Round
 
         if ($playerOpenCardAbility) {
             foreach (Game::getAllPlayers() as $key => $player) {
-                if ($player->getConnResourceId() == $playerOpenCardAbility) {
+                if ($player->getId() == $playerOpenCardAbility) {
                     $this->playerOpenCardAbility = $player;
                 }
             }
@@ -348,7 +348,7 @@ class Round
         if ($countOfSaves === count($this->roundParameters) - 1) {
             foreach ($this->roundParameters as $index => $player) {
                 if (!$player['state']) {
-                    $this->playerTakingConWithoutShowingUp = $player['resourceId'];
+                    $this->playerTakingConWithoutShowingUp = $player['id'];
                 }
             }
 
@@ -382,17 +382,17 @@ class Round
         if ($countOfRaises >= 2) {
             $this->isFirstRoundOfSales = false;
 
-            if ($playerSteping->getConnResourceId() !== $this->lastRasingPlayer->getConnResourceId()) {
+            if ($playerSteping->getId() !== $this->lastRasingPlayer->getId()) {
                 foreach ($this->roundParameters as $index => $player) {
-                    if ($player['resourceId'] === $playerSteping->getConnResourceId()) {
+                    if ($player['id'] === $playerSteping->getId()) {
                         $indexOfCurrentStepPlayer = $index;
-                    } else if ($this->lastRasingPlayer->getConnResourceId() === $player['resourceId']) {
+                    } else if ($this->lastRasingPlayer->getId() === $player['id']) {
                         $indexOfLastRasingPlayer = $index;
                     }
                 }
             } else {
                 foreach ($this->roundParameters as $index => $player) {
-                    if ($player['resourceId'] === $playerSteping->getConnResourceId()) {
+                    if ($player['id'] === $playerSteping->getId()) {
                         $indexOfCurrentStepPlayer = $index;
                         $indexOfLastRasingPlayer = $index;
                     }
@@ -454,37 +454,37 @@ class Round
                     if ($player['state'] === 'raise') {
                         if (isset($this->roundParameters[$index - 1])) {
                             if ($this->roundParameters[$index - 1]['state'] === 'save') {
-                                $playerOpenCardAbility = $player['resourceId'];
+                                $playerOpenCardAbility = $player['id'];
                             } else if ($this->roundParameters[$index - 1]['state'] === 'collate') {
-                                $playerOpenCardAbility = $this->roundParameters[$index - 1]['resourceId'];
+                                $playerOpenCardAbility = $this->roundParameters[$index - 1]['id'];
                             }
                         } else {
                             if ($this->roundParameters[count($this->roundParameters) - 1]['state'] === 'save') {
-                                $playerOpenCardAbility = $player['resourceId'];
+                                $playerOpenCardAbility = $player['id'];
                             } else if ($this->roundParameters[count($this->roundParameters) - 1]['state'] === 'collate') {
-                                $playerOpenCardAbility = $this->roundParameters[count($this->roundParameters) - 1]['resourceId'];
+                                $playerOpenCardAbility = $this->roundParameters[count($this->roundParameters) - 1]['id'];
                             }
                         }
                     }
                 }
             } else {
                 if (isset($this->lastSavingPlayer) && $playerSteping->getId() === $this->lastSavingPlayer->getId()) {
-                    $playerOpenCardAbility = $this->lastRasingPlayer->getConnResourceId();
+                    $playerOpenCardAbility = $this->lastRasingPlayer->getId();
                 } else {
-                    $playerOpenCardAbility = $this->lastCollatingPlayer->getConnResourceId();
+                    $playerOpenCardAbility = $this->lastCollatingPlayer->getId();
                 }
             }
         } else if ($countOfRaises < 2 && $countOfCollates === 0) {
             if ($this->isFirstRoundOfSales) {
                 foreach ($this->roundParameters as $index => $player) {
                     if ($player['state'] === 'raise') {
-                        $this->playerTakingConWithoutShowingUp = $player['resourceId'];
+                        $this->playerTakingConWithoutShowingUp = $player['id'];
                     }
                 }
             } else {
                 foreach ($this->roundParameters as $index => $player) {
                     if ($player['state'] === 'raise') {
-                        $playerOpenCardAbility = $player['resourceId'];
+                        $playerOpenCardAbility = $player['id'];
                     }
                 }
             }
@@ -492,7 +492,7 @@ class Round
         } else if ($countOfRaises > 1) {
             foreach ($this->roundParameters as $index => $player) {
                 if ($player['state'] === 'raise') {
-                    $this->playersRaising[] = $player['resourceId'];
+                    $this->playersRaising[] = $player['id'];
                 }
             }
         }
@@ -505,7 +505,7 @@ class Round
 
         foreach ($players as $index => $player) {
             $this->roundParameters[] = [
-                'resourceId' => $player->getConnResourceId(),
+                'id' => $player->getId(),
                 'state' => null
             ];
         }

@@ -111,10 +111,8 @@ class ChatSocket extends BaseSocket
                         'msg' => "Раунд в процессе, Вы сможете подключиться по завершении раунда..."
                     ]));
                 } else {
-                    var_dump('нашел айди в подключенных');
                     foreach (Game::getAllPlayers() as $player) {
                         if ((int)$player->getId() === (int)$player_data['id']) {
-                            var_dump('setconnection');
                             $player->setConnection($player_sender);
                         }
                     }
@@ -122,7 +120,6 @@ class ChatSocket extends BaseSocket
                     $reconnectingPlayer = null;
                     foreach (Game::getAllPlayers() as $player) {
                         if ($player->getConnResourceId() === $player_sender->resourceId) {
-                            var_dump('define player');
                             $reconnectingPlayer = $player;
                         }
                     }
@@ -141,8 +138,8 @@ class ChatSocket extends BaseSocket
                     $roundStateAfterReconnect = [
                         "reconnect" => true,
                         "cards" => $cardsNormalizedForUser,
-                        "name" =>$player->getName(),
-                        "balance" =>$player->getBalance(),
+                        "name" =>$reconnectingPlayer->getName(),
+                        "balance" =>$reconnectingPlayer->getBalance(),
                         "allPlayers" => Game::getAllPlayersNormalizedForGame(),
                         "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
                         "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
@@ -164,19 +161,24 @@ class ChatSocket extends BaseSocket
                         "savingPlayers" =>$currentRound->getSavingPlayers(),
                         "toCollate" => $currentRound->getNextStepPlayerToCollate()
                     ];
-
+                    $this->clients->attach($player_sender);
                     $reconnectingPlayer->getConnection()->send(json_encode($roundStateAfterReconnect));
                 }
             }
         }
         
         if (isset($player_data['makingBet']) && $player_data['makingBet']) {
-            
+            /*foreach (Game::getAllPlayers() as $player) {
+                var_dump('resourceId: '.$player->getConnResourceId());
+                var_dump('id: '.$player->getId());
+            }
+            var_dump($player_sender->resourceId);*/
             foreach (Game::getAllPlayers() as $player) {
                 if ($player->getConnection() == $player_sender) {
                     $response = $player->makeBet((int)$player_data["betSum"]);
-
+                    
                     if (!$response) {
+                        
                         $balanceError = [
                             'balanceError' => true,
                             'msg' => 'Ваша ставка превышает Ваш баланс'
@@ -207,7 +209,7 @@ class ChatSocket extends BaseSocket
                 "savingPlayers" =>$currentRound->getSavingPlayers(),
                 "toCollate" => $currentRound->getNextStepPlayerToCollate()
             ];
-
+            
             foreach ($this->clients as $client) {
                 $client->send(json_encode($dataAboutRoundState));
             }
@@ -274,12 +276,14 @@ class ChatSocket extends BaseSocket
 
     public function onClose(ConnectionInterface $conn)
     {
-        if (empty($this->clients)) {
-            $game = new App\Game();
-            $game->save();
+        var_dump(Game::getAllPlayers());
+        var_dump(Game::checkConnectAbility());
+        if (Game::checkConnectAbility()) {
+            Game::deletePlayerDueToDisconnect($conn);
+            var_dump(Game::getAllPlayers());
         }
+        var_dump($this->clients);
         $this->clients->detach($conn);
-
         echo "Client {$conn->resourceId} has been disconnected \n";
     }
 

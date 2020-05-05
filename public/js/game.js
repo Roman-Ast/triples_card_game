@@ -55,12 +55,12 @@ const socketUnit = {
         );
         this.makeBetBtn.bind('click', () => this.send({
                 makingBet: true,
-                betMaker: $("#playerName").html(),
+                betMaker: $("#playerName").text(),
                 betSum: $("#betSum").val()
         }));
         this.saveBtn.bind('click', () => this.send({
             makingBet: true,
-            betMaker: $("#playerName").html(),
+            betMaker: $("#playerName").text(),
             betSum: 0
         }));
         this.collateBtn.bind('click', () => this.send({
@@ -120,19 +120,22 @@ const socketUnit = {
         }
     }, 
     onOpenSocket() {
+        this.connectBtn.hide();
+        this.startRoundBtn.show();
+        $('#connectedPlayers').append('<div style="color:#fff;">Соединение установлено!</div>');
         console.log('Соединение установлено');
+        this.createInterval();
     },
 
     openSocket() {
         this.ws = new WebSocket("ws://192.168.0.107:8050");
-        this.ws.onopen = () => this.onOpenSock;
+        this.ws.onopen = () => this.onOpenSocket();
         this.ws.onmessage = (e) => this.onMessage(JSON.parse(e.data));
         this.ws.onclose = () => this.onClose();
-        this.createInterval();
     },
 
     onClose() {
-        console.log('Игрок отключился');
+        $('#connectedPlayers').append('<div style="color:#fff;">Сервер не отвечает!</div>');
     },
 
     createInterval() {

@@ -57,8 +57,8 @@ const createPlayerContainer = (elementName, currentPlayerName, currentDistributo
         firstWordFlag.classList.add('firstWordFlag');
 
         $(firstWordFlag)
-            .css({'border': '10px solid transparent'})
-            .css({'border-bottom': '10px solid green'})
+            .css({'border': '12px solid transparent'})
+            .css({'border-bottom': '12px solid red'})
         playerDataContainer.appendChild(firstWordFlag);
     }
 
@@ -74,7 +74,6 @@ const playersArrangement = (
                     currentDistributorName,
                     firstWordPlayer
                             ) => {
-    const colorForYourContainer = 'red';
 
     const roomHeight = room.height();
     const roomWidth = room.width();

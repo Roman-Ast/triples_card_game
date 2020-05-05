@@ -13,14 +13,13 @@ class Diller
     {
         $deckRaw = new Deck();
         $deck = $deckRaw->getDeck();
-
-        shuffle($deck);
+        
         shuffle($deck);
         shuffle($deck);
 
         foreach (Game::getAllPlayers() as $player) {
             for ($i = 0; $i < self::NUMBER_OF_CARDS_ON_HAND; $i++) {
-                $rand = rand(0, count($deck) - 1);
+                $rand = random_int(0, count($deck) - 1);
                 $card = $deck[$rand];
                 $player->take_card($card);
                 unset($deck[$rand]);

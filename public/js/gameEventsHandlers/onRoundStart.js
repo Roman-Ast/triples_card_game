@@ -1,7 +1,8 @@
 import playersArrangement from '../ playersArrangement.js';
 
 const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
-clearInterval(checkingOtherPlayersConnection);
+    clearInterval(checkingOtherPlayersConnection);
+    $('#betSum').empty();
     //убираем спиннер ожидания
     $('#waitingForStart').hide();
 
@@ -12,7 +13,7 @@ clearInterval(checkingOtherPlayersConnection);
     for (let i = msgObject.defaultBet; i < 3000; i += msgObject.stepInBets) {
         $('#betSum').append(`<option value="${i}">${i}</option>`);
     }
-
+    $('#betSum').prop('disabled', false);
     //прячем кнопку "готов" на время раунда
     $("#takeCashBox").css({"display":"none"});
     $("#radiness").css({"display":"none"});

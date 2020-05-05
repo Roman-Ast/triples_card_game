@@ -2,6 +2,7 @@
 
 namespace App\GameRequisits;
 
+use Ratchet\ConnectionInterface;
 use App\GameRequisits\Round;
 use App\GameRequisits\Users\Player;
 use App\Game as Game_model;
@@ -31,6 +32,19 @@ class Game
     public static function getLastRoundWinner() :array
     {
         return self::$lastRoundWinner;
+    }
+
+    public static function deletePlayerDueToDisconnect(ConnectionInterface $conn):void
+    {
+        foreach (self::$players as $index => $player) {
+            if ($player->getConnResourceId() === $conn->resourceId) {
+                unset(self::$players[$index]);
+            }
+        }
+        foreach (self::$players as $index => $player) {
+            var_dump($player->getId());
+        }
+        self::$players = array_slice(self::$players);
     }
 
     public static function getTax()

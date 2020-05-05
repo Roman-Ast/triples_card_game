@@ -50,7 +50,9 @@ class Card
                 unset($cards[$index]);
             }
         }
+
         $cards = array_slice($cards, 0);
+        
         if ($cards[0]->getName() === $cards[1]->getName()) {
             array_push(
                 $cards, 

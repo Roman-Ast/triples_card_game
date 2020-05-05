@@ -18,10 +18,21 @@ class Player
     private $distributor = false;
     private $cardsValueAfterOpening = 0;
     private $lastRaiseOrColl = 0;
+    private $activity = true;
 
     public function __construct(ConnectionInterface $conn)
     {
         $this->conn = $conn;
+    }
+
+    public function getActivity()
+    {
+        return $this->activity;
+    }
+
+    public function setActivity(bool $activity)
+    {
+        $this->activity = $activity;
     }
 
     public function setLastRaiseOrColl(int $bet)
@@ -42,6 +53,10 @@ class Player
 
     public function makeBet(int $bet)
     {
+        if ($bet) {
+            $this->activity = true;
+        }
+        
         if ($this->balance - $bet < 0) {
             return 'false';
         }
