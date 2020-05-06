@@ -18,15 +18,15 @@ const createPlayerContainer = (elementName, currentPlayerName, currentDistributo
     const imgContainer = document.createElement("div");
     const playerNameContainer = document.createElement("div");
     const playerDataContainer = document.createElement("div");
-    const img = new Image(24, 24);
-    img.src = 'https://img.icons8.com/wired/2x/circled-user.png';
+    const img = new Image(36, 28);
+    img.src = '/images/table/Shirts.png';
     imgContainer.appendChild(img); 
     playerContainer.appendChild(imgContainer);
 
     $(playerContainer).attr('ownerName', elementName);
     if (elementName === currentPlayerName) {
         playerNameContainer.append("Вы");
-        playerNameContainer.style.color = 'green';
+        playerNameContainer.style.color = 'red';
     }
     else playerNameContainer.append(elementName);
     playerContainer.appendChild(playerNameContainer);

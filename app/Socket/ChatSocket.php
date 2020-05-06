@@ -78,7 +78,7 @@ class ChatSocket extends BaseSocket
                             "face" => $card->getFace()
                         ];
                     }
-
+                    $player->setBalance();
                     $dataForRoundStarting = [
                         "dataForRoundStarting" => true,
                         "cards" => $cardsNormalizedForUser,
@@ -134,7 +134,7 @@ class ChatSocket extends BaseSocket
                     }
 
                     $currentRound = Game::getCurrentRound();
-
+                    
                     $roundStateAfterReconnect = [
                         "reconnect" => true,
                         "cards" => $cardsNormalizedForUser,
@@ -225,7 +225,8 @@ class ChatSocket extends BaseSocket
                     Game::getCurrentRound()->getSumOfDeafultBets(),
                 "playersPoints" => Game::getPlayersPointsAfterOpeningCards(),
                 "winnerAfterOpening" => Game::getCurrentRound()->getWinnerAfterOpeningCards(),
-                "allCards" => Game::getAllPlayersCards()
+                "allCards" => Game::getAllPlayersCards(),
+                "allPlayers" => Game::getAllPlayersNormalizedForGame(),
             ];
 
             foreach ($this->clients as $client) {
@@ -271,18 +272,65 @@ class ChatSocket extends BaseSocket
 
             $countOfClickingPlayers = [];
             
+        } elseif (isset($player_data['aboutCooking']) && $player_data['aboutCooking']) {
+            
+            foreach (Game::getAllPlayers() as $player) {
+                if ($player->getConnection() == $player_sender) {
+                    $player->readyToCook($player_data['cooking']);
+                }
+            }
+
+            if (Game::isSomeNotWinnerAgreedToCook()) {
+                foreach (Game::getAllPlayers() as $player) {
+                    $cardsRaw = $player->getCardsOnHand();
+                    $cardsNormalizedForUser = [];
+
+                    foreach ($cardsRaw as $card) {
+                        $cardsNormalizedForUser[] = [
+                            "name" => $card->getName(),
+                            "suit" => $card->getSuit(),
+                            "face" => $card->getFace()
+                        ];
+                    }
+                    
+                    $someNotWinnersAgreeToCook = [
+                        "someNotWinnersAgreeToCook" => true,
+                        'isCooking' => Game::isCooking(),
+                        
+                    ];
+                    
+                    $player->getConnection()->send(json_encode($someNotWinnersAgreeToCook));
+                }
+            } else if (Game::isAllWinnersAgreedToCook()) {
+
+                $allWinnersAgreeToCook = [
+                    'allWinnersAgreeToCook' => true,
+                    'winners' => Game::getCurrentRound()->getWinnerAfterOpeningCards()
+                ];
+
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($allWinnersAgreeToCook));
+                }
+            } else if (Game::isNoneNotWinnersAgreedToCook()) {
+
+                $noneNotWinnersAgreedToCook = [
+                    'noneNotWinnersAgreedToCook' => true,
+                    'winners' => Game::getCurrentRound()->getWinnerAfterOpeningCards()
+                ];
+
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($noneNotWinnersAgreedToCook));
+                }
+            } 
         }
     }
 
     public function onClose(ConnectionInterface $conn)
     {
-        var_dump(Game::getAllPlayers());
-        var_dump(Game::checkConnectAbility());
         if (Game::checkConnectAbility()) {
             Game::deletePlayerDueToDisconnect($conn);
-            var_dump(Game::getAllPlayers());
         }
-        var_dump($this->clients);
+
         $this->clients->detach($conn);
         echo "Client {$conn->resourceId} has been disconnected \n";
     }

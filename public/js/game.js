@@ -6,7 +6,11 @@ import onCheckConnection from './gameEventsHandlers/onCheckConnection.js';
 import onNextRound from './gameEventsHandlers/onNextRound.js';
 import playersArrangement from './ playersArrangement.js';
 import onBalanceError from './gameEventsHandlers/onBalanceError.js';
-import reconnect from './gameEventsHandlers/onReconnect.js';
+import onCook from './gameEventsHandlers/onCook.js';
+import askedWinnersForCooking from './gameEventsHandlers/onAskedWinnersForCooking.js';
+import someNotWinnersAgreeToCook from './gameEventsHandlers/onSomeNotWinnersAgreeToCook.js';
+import noneNotWinnersAgreedToCook from './gameEventsHandlers/onNoneNotWinnersAgreedToCook.js';
+import allWinnersAgreeToCook from './gameEventsHandlers/onAllWinnersAgreeToCook.js';
 
 const socketUnit = {
     init() {
@@ -19,7 +23,11 @@ const socketUnit = {
         this.takeCashBoxBtn = $('#takeCashBox');
         this.takeCashBoxAfterOpeningBtn = $('#takeCashBoxAfterOpening');
         this.shareCashBoxAfterOpeningBtn = $('#shareCashBoxAfterOpening');
+        this.cookingBtn = $('#cooking');
+        this.notCookingBtn = $('#notCooking');
         this.playersArrangement = playersArrangement;
+        this.mainFrame = $('#mainFrame');
+        this.frameForAllPlayersCardsClose = $('#frameForAllPlayersCardsClose');
 
         this.initCss();
         this.bindEvents();
@@ -80,21 +88,22 @@ const socketUnit = {
         this.shareCashBoxAfterOpeningBtn.bind('click', () => this.send({
             shareCashBoxAfterOpening: true
         }));
+        this.cookingBtn.bind('click', () => this.send({
+            aboutCooking: true,
+            cooking: true
+        }));
+        this.notCookingBtn.bind('click', () => this.send({
+            aboutCooking: true,
+            cooking: false
+        }));
 
-        $('#frameForAllPlayersCardsClose').bind('click', function () {
-            $('#frameForAllPlayersCards').hide();
-            $('#innerFrame').empty();
-        });
-    
-        $('#mainFrame').bind('click', function () {
-            $('#frameForAllPlayersCards').hide();
-            $('#innerFrame').empty();
-        });
+        
         
     },
 
     send(objToSend, f = ()=>{}) {
-        f();
+        
+        f(objToSend);
         this.ws.send(JSON.stringify(objToSend));
     },
 
@@ -107,6 +116,11 @@ const socketUnit = {
             dataAfterOpeningCards: onOpenCards,
             nextRound: onNextRound,
             balanceError: onBalanceError,
+            dataForCooking: onCook,
+            askedWinnersForCooking,
+            someNotWinnersAgreeToCook,
+            noneNotWinnersAgreedToCook,
+            allWinnersAgreeToCook,
             reconnect: () => {
                 onRoundStart(msgObject, this.checkingOtherPlayersConnection),
                 onMakeBet(msgObject)
@@ -156,7 +170,15 @@ const socketUnit = {
 
 window.addEventListener('load', () => socketUnit.init());
 
+$('#frameForAllPlayersCardsClose').on('click', function () {
+    $('#frameForAllPlayersCards').hide();
+    $('#innerFrame').empty();
+});
 
+$('#mainFrame').on('click', function () {
+    $('#frameForAllPlayersCards').hide();
+    $('#innerFrame').empty();
+});
 
 
 

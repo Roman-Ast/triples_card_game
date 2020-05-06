@@ -5,25 +5,23 @@ const onOpenCards = (msgObject) => {
     $('#openCards').hide();
 
     if (msgObject.winnerAfterOpening.length === 1) {
-        $('#modalBody').append(`<div>Победитель: ${msgObject.winnerAfterOpening[0]}</div>`);
-        $('#modalBody').append(`<div>Касса: ${msgObject.totalCashBox}</div>`);
-        $('#modal').show();
-        $("#openCards").css({"display": "none"});
 
         if ($('#playerName').text() === msgObject.winnerAfterOpening[0]) {
             $("#takeCashBoxAfterOpening").show({"display": "block"});
         }
         
-    } else {
-        $('#modalBody').append(`Победители:`);
-        $('#modal').show();
-
-        msgObject.winnerAfterOpening.forEach(function (winner) {
-            if ($('#playerName').text() === winner) {
-                $('#shareCashBoxAfterOpening').show();
-            }
-            $('#modalBody').append(`<div>${winner}</div>`);
-        });
+    } else if (msgObject.allPlayers.length === msgObject.winnerAfterOpening.length) {
+        $("#shareCashBoxAfterOpening").show();
+        $('#cooking').show();
+    } else if (msgObject.winnerAfterOpening.length > 1) {
+        if (msgObject.winnerAfterOpening.includes($('#playerName').text())) {
+            $('button').each(function () {
+                $(this).hide();
+            });
+        } else {
+            $('#cooking').show();
+            $('#notCooking').show();
+        }
     }
 
     const openCardsForAll = (allCards, container) => {

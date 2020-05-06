@@ -17,6 +17,8 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
     //прячем кнопку "готов" на время раунда
     $("#takeCashBox").css({"display":"none"});
     $("#radiness").css({"display":"none"});
+    $("#cooking").css({"display":"none"});
+    $("#notCooking").css({"display":"none"});
     $("#bet").css({"display":"flex"});
 
     console.dir(msgObject);
@@ -28,7 +30,7 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
     const currentFirstWordPlayer = msgObject.currentFirstWordPlayer;
 
     //Выводим модальное окно с информацией о раунде
-    const modalBody = document.querySelector("#modalBody");
+    /*const modalBody = document.querySelector("#modalBody");
 
     const currentRoundField = document.createElement("div");
     currentRoundField.innerHTML = `Текущий раунд: ${msgObject.currentRoundId}`;
@@ -59,7 +61,7 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
 
     $("#modal")
         .css({"left": `calc(${roomWidth / 2 - modalWidth / 2}px)`})
-        .css({"top": `calc(${roomHeight / 2 - modalHeight / 2}px)`});
+        .css({"top": `calc(${roomHeight / 2 - modalHeight / 2}px)`});*/
 
 
     if (msgObject.name !== currentFirstWordPlayer) {
@@ -76,8 +78,8 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
         allPlayers,
         $('#room'),
         msgObject.name,
-        msgObject.currentDistributor,
-        msgObject.currentFirstWordPlayer
+        currentDistributor,
+        currentFirstWordPlayer
     );
 
     //заполняем поле "касса" суммой всех дефолтных ставок
@@ -90,9 +92,8 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
     cards.forEach(card => {
         
         const cardContainer = document.createElement("div");
-        const img = new Image(70, 120);
+        const img = new Image(96.4, 144.6);
         img.src = card.face;
-        img.style.width = '100%';
         img.classList.add('cardFace');
         cardContainer.appendChild(img);
 

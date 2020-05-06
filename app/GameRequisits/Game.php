@@ -15,21 +15,151 @@ class Game
     private static $rounds = [];
     private static $connectAbility = true;
     private static $allPlayersReady = false;
+    private static $isCooking = false;
     private static $currentRoundId = 0;
     private static $currentRound;
     private static $currentDistributor;
     private static $first_word_player;
     private static $lastRoundWinner;
+    private static $lastRoundCashBox;
+    private static $noneNotWinnersAgreedToCook = false;
+    private static $someNotWinnerAgreedToCook = false;
+    private static $allwinnersAgreedToCook = false;
+    private static $allPlayersWinners = false;
+    private static $cookingPlayers = [];
     private const DEFAULT_BET = 50;
     private const STEP_IN_BETS = 10;
     private const TAX = 10;
+
+    public static function isCooking()
+    {
+        return self::$isCooking;
+    }
+
+    public static function informAboutCooking(Player $informingPlayer, bool $readiness)
+    {
+        if (count(self::$cookingPlayers) < 1) {
+            foreach (self::$players as $player) {
+                self::$cookingPlayers[] = [
+                    'id' => $player->getId(),
+                    'name' => $player->getName(),
+                    'player' => $player,
+                    'readyForCook' => null,
+                    'winnerOfLastRound' => in_array($player->getName(), self::getCurrentRound()->getWinnerAfterOpeningCards()) ? true : false
+                ];
+            }
+            foreach (self::$cookingPlayers as $index => $item) {
+                if ($item['player']->getId() == $informingPlayer->getId()) {
+                    self::$cookingPlayers[$index]['readyForCook'] = $readiness;
+                }
+            }
+        } else {
+            foreach (self::$cookingPlayers as $index => $item) {
+                if ($item['id'] == $informingPlayer->getId()) {
+                    self::$cookingPlayers[$index]['readyForCook'] = $readiness;
+                }
+            }
+        }
+        //если у всех одинаковое кол-во очков и все сказали и все согласны варить
+        if (count(self::$players) === count(self::$lastRoundWinner)){
+            self::$allPlayersWinners = true;
+        }
+        //если все непобедители высказались и кто-то из них согласился на свару
+        if (self::allNotWinnersSaid() && self::someNotWinnersAgreeToCook()) {
+            self::$isCooking = true;
+            self::$someNotWinnerAgreedToCook = true;
+        } 
+        //если все непобедители высказались и все отказались от свары то $someNotWinnerAgreedToCook останется false
+        elseif (self::allNotWinnersSaid() && !self::someNotWinnersAgreeToCook() && !self::$allPlayersWinners && !self::allWinnersSaid()) {
+            self::$noneNotWinnersAgreedToCook = true;
+        }
+        //если все непобедители отказались и все победители согласились на свару
+        elseif (self::allWinnersSaid() && self::allWinnersAgreeToCook()) {
+            self::$isCooking = true;
+            self::$allwinnersAgreedToCook = true;
+        }
+    }
+
+    public static function allNotWinnersSaid()
+    {
+        foreach (self::$cookingPlayers as $item) {
+            if (!$item['winnerOfLastRound'] && $item['readyForCook'] === null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    public static function someNotWinnersAgreeToCook()
+    {
+        foreach (self::$cookingPlayers as $item) {
+            if ($item['readyForCook'] && $item['winnerOfLastRound'] === false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function allWinnersSaid()
+    {
+        foreach (self::$cookingPlayers as $item) {
+            if ($item['winnerOfLastRound']) {
+                if ($item['readyForCook'] === null) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static function allWinnersAgreeToCook()
+    {
+        foreach (self::$cookingPlayers as $item) {
+            if ($item['winnerOfLastRound']) {
+                if ($item['readyForCook'] === false) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+
+    public static function isNoneNotWinnersAgreedToCook()
+    {
+        return self::$noneNotWinnersAgreedToCook;
+    }
+
+    public static function isAllWinnersAgreedToCook()
+    {
+        return self::$allwinnersAgreedToCook;
+    }
+
+    public static function isSomeNotWinnerAgreedToCook()
+    {
+        return self::$someNotWinnerAgreedToCook;
+    }
+
+    public static function setLastRoundCashBox(int $cashBox)
+    {
+        self::$lastRoundCashBox = $cashBox;
+    }
+
+    public static function getLastRoundCashBox()
+    {
+        return self::$lastRoundCashBox;
+    }
 
     public static function setLastRoundWinner(array $winner)
     {
         self::$lastRoundWinner = $winner;
     }
 
-    public static function getLastRoundWinner() :array
+    public static function getLastRoundWinner()
     {
         return self::$lastRoundWinner;
     }
@@ -78,6 +208,8 @@ class Game
             self::$currentRoundId += 1;
             $round = new Round(self::$currentRoundId);
             self::$currentRound = $round;
+            self::$currentRound->setStatus('round');
+            self::$currentRound->setCashBox(0);
             self::$rounds[self::$currentRoundId] = $round;
             self::$allPlayersReady = true;
             
@@ -102,7 +234,7 @@ class Game
 
     public static function getAllPlayersNormalizedForGame()
     {
-        foreach (self::$players as $player) {
+        foreach (self::getAllPlayers() as $player) {
             $normalizedPlayers[] = [
                 'name' => $player->getName(),
                 'balance' => $player->getBalance()
@@ -183,7 +315,7 @@ class Game
 
     public static function getAllPlayersIdsNormalizedForGame()
     {
-        foreach (self::$players as $player) {
+        foreach (self::getAllPlayers() as $player) {
             $normalizedPlayers[] = [
                 'id' => $player->getId(),
                 'balance' => $player->getBalance()

@@ -19,20 +19,18 @@ class Player
     private $cardsValueAfterOpening = 0;
     private $lastRaiseOrColl = 0;
     private $activity = true;
+    private $readyToCook = false;
 
     public function __construct(ConnectionInterface $conn)
     {
         $this->conn = $conn;
     }
 
-    public function getActivity()
+    public function readyToCook(bool $readyToCook)
     {
-        return $this->activity;
-    }
-
-    public function setActivity(bool $activity)
-    {
-        $this->activity = $activity;
+        $this->cards_on_hand = [];
+        $this->readyToCook = $readyToCook;
+        Game::informAboutCooking($this, $readyToCook);
     }
 
     public function setLastRaiseOrColl(int $bet)
@@ -53,10 +51,6 @@ class Player
 
     public function makeBet(int $bet)
     {
-        if ($bet) {
-            $this->activity = true;
-        }
-        
         if ($this->balance - $bet < 0) {
             return 'false';
         }
@@ -65,11 +59,6 @@ class Player
         Game::getCurrentRound()->takeBet($this, $bet);
 
         return 'Ok';
-    }
-
-    public function save()
-    {
-
     }
 
     public function readyToPlay()
@@ -87,7 +76,7 @@ class Player
     {
         return $this->radiness;
     }
-    public function take_card(Card $card)
+    public function takeCard(Card $card)
     {
         $this->cards_on_hand[] = $card;
     }

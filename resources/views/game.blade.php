@@ -37,7 +37,7 @@
                     <div id="internalRound"></div>
                     <div id="cashBox">
                         <div id="cashBoxSum"></div>
-                        <img src="{{URL::asset('images/table/chips24.png')}}" alt="card">
+                        <img src="{{URL::asset('images/table/Coins.png')}}"style="width:100%" alt="card">
                     </div>
                 </div>
             </div>
@@ -63,15 +63,16 @@
                                 <span id="collateSum"></span>
                             </button>
                             <div id="raise">
-                                <select id="betSum"></select>
                                 <button id="makeBet" class="btn btn-sm btn-primary">Поднять</button>
+                                <select id="betSum"></select>
                             </div>
                         </div>
                         <button id="openCards" class="btn btn-sm btn-primary">Открыть карты</button>
                         <button id="takeCashBox" class="btn btn-sm btn-success">Забрать не вскрываясь</button>
                         <button id="takeCashBoxAfterOpening" class="btn btn-sm btn-success">Забрать кассу</button>
                         <button id ="shareCashBoxAfterOpening" class="btn btn-sm btn-success ">Разделить кассу</button>
-                        <button id="svara" class="btn btn-sm btn-danger " disabled>Свара</button>
+                        <button id="cooking" class="btn btn-sm btn-success">Варить</button>
+                        <button id="notCooking" class="btn btn-sm btn-danger">Отказаться</button>
                     </div>
                 </div>
                 <div id="myCards">
@@ -90,5 +91,8 @@
         <script src="{{ URL::asset('js/gameEventsHandlers/onRoundStart.js') }}" async type="module"></script>
         <script src="{{ URL::asset('js/gameEventsHandlers/onCheckConnection.js') }}" type="module"></script>
         <script src="{{ URL::asset('js/gameEventsHandlers/onBalanceError.js') }}" type="module"></script>
+        <script src="{{ URL::asset('js/gameEventsHandlers/onAllWinnersAgreeToCook.js') }}" type="module"></script>
+        <script src="{{ URL::asset('js/gameEventsHandlers/onAskedWinnersForCooking.js') }}" type="module"></script>
+        <script src="{{ URL::asset('js/gameEventsHandlers/onAskedWinnersForCooking.js') }}" type="module"></script>
     </body>
 </html>

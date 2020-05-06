@@ -96,7 +96,7 @@ const onMakeBet = (msgObject) => {
             </div>`
         );
         
-        $('#modal').show();
+        //$('#modal').show();
         $("#bet").hide();
         if ($("#playerName").text() === msgObject.playerTakingConWithoutShowingUp) {
             //показываем кнопку "забрать кон"
