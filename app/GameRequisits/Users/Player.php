@@ -54,7 +54,11 @@ class Player
         if ($this->balance - $bet < 0) {
             return 'false';
         }
-        
+        if (Game::isCooking()) {
+            $this->balance -= $bet;
+            Game::getCurrentCooking()->takeBet($this, $bet);
+            return 'Ok';
+        }
         $this->balance -= $bet;
         Game::getCurrentRound()->takeBet($this, $bet);
 

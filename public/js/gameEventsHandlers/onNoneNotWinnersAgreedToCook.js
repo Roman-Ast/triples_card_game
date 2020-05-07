@@ -6,9 +6,8 @@ const noneNotWinnersAgreedToCook = (msgObject) => {
         $('#shareCashBoxAfterOpening').show();
         
     } else {
-        $('button').each(function () {
-            $(this).hide();
-        });
+        $('#cooking').hide();
+        $('#notCooking').hide();
     }
  };
  

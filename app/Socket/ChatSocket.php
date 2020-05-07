@@ -6,6 +6,7 @@ use App\Socket\Base\BaseSocket;
 use Ratchet\ConnectionInterface;
 use App\GameRequisits\Users\Player;
 use App\GameRequisits\Game;
+use App\Socket\UserMessages\Composer;
 
 
 class ChatSocket extends BaseSocket
@@ -38,24 +39,9 @@ class ChatSocket extends BaseSocket
         
         if (Game::checkConnectAbility()) {
             if (isset($player_data['checkConnection']) && $player_data['checkConnection']) {
-                foreach (Game::getAllPlayers() as $player) {
-                    if ($player->getConnection() == $player_sender) {
-                        $player->setId((int)$player_data["id"]);
-                        $player->setName($player_data["name"]);
-                        $player->setBalance();
-                    }
-                }
-                $connectedPlayers = [];
-                foreach (Game::getAllPlayers() as $player) {
-                    $connectedPlayers[] = $player->getName();
-                }
-    
-                $checkConnectionData = [
-                    'checkConnection' => true,
-                    'connectedPlayers' => $connectedPlayers
-                ];
-                
-                
+
+                $checkConnectionData = Composer::checkConnection($player_data, $player_sender);
+
                 $player_sender->send(json_encode($checkConnectionData));
                 
             }else if (isset($player_data['readyToPlay']) && $player_data['readyToPlay']) {
@@ -64,36 +50,13 @@ class ChatSocket extends BaseSocket
                         $player->readyToPlay();
                     }
                 }
-            }
             
-            if (Game::areAllPlayersReady()) {
-                foreach (Game::getAllPlayers() as $player) {
-                    $cardsRaw = $player->getCardsOnHand();
-                    $cardsNormalizedForUser = [];
-
-                    foreach ($cardsRaw as $card) {
-                        $cardsNormalizedForUser[] = [
-                            "name" => $card->getName(),
-                            "suit" => $card->getSuit(),
-                            "face" => $card->getFace()
-                        ];
+            
+                if (Game::areAllPlayersReady()) {
+                    foreach (Game::getAllPlayers() as $player) {
+                        $dataForRoundStarting = Composer::readyToPlay($player_data, $player);
+                        $player->getConnection()->send(json_encode($dataForRoundStarting));
                     }
-                    $player->setBalance();
-                    $dataForRoundStarting = [
-                        "dataForRoundStarting" => true,
-                        "cards" => $cardsNormalizedForUser,
-                        "name" =>$player->getName(),
-                        "balance" =>$player->getBalance(),
-                        "allPlayers" => Game::getAllPlayersNormalizedForGame(),
-                        "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
-                        "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
-                        "currentDistributor" => Game::getCurrentDistributor()->getName(),
-                        "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
-                        "currentRoundId" => Game::getCurrentRoundId(),
-                        "defaultBet" => Game::getDefaultBet(),
-                        "stepInBets" => Game::getStepInBets()
-                    ];
-                    $player->getConnection()->send(json_encode($dataForRoundStarting));
                 }
             }
             
@@ -111,68 +74,19 @@ class ChatSocket extends BaseSocket
                         'msg' => "Раунд в процессе, Вы сможете подключиться по завершении раунда..."
                     ]));
                 } else {
-                    foreach (Game::getAllPlayers() as $player) {
-                        if ((int)$player->getId() === (int)$player_data['id']) {
-                            $player->setConnection($player_sender);
-                        }
-                    }
-
-                    $reconnectingPlayer = null;
-                    foreach (Game::getAllPlayers() as $player) {
-                        if ($player->getConnResourceId() === $player_sender->resourceId) {
-                            $reconnectingPlayer = $player;
-                        }
-                    }
-
-                    $cardsNormalizedForUser = [];
-                    foreach ($reconnectingPlayer->getCardsOnHand() as $card) {
-                        $cardsNormalizedForUser[] = [
-                            "name" => $card->getName(),
-                            "suit" => $card->getSuit(),
-                            "face" => $card->getFace()
-                        ];
-                    }
-
-                    $currentRound = Game::getCurrentRound();
+                    $dataForReconnecting = Composer::tryReconnect($player_data, $player_sender);
                     
-                    $roundStateAfterReconnect = [
-                        "reconnect" => true,
-                        "cards" => $cardsNormalizedForUser,
-                        "name" =>$reconnectingPlayer->getName(),
-                        "balance" =>$reconnectingPlayer->getBalance(),
-                        "allPlayers" => Game::getAllPlayersNormalizedForGame(),
-                        "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
-                        "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
-                        "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
-                        "currentRoundId" => Game::getCurrentRoundId(),
-                        "currentDistributor" => Game::getCurrentDistributor()->getName(),
-                        "currentStepPlayer" => $currentRound->getCurrentStepPlayer()->getName(),
-                        "nextStepPlayer" => $currentRound->getNextStepPlayer()->getName(),
-                        "playerOpenCardAbility" => $currentRound->getPlayerOpenCardAbility(),
-                        "lastBet" => $currentRound->getLastBet(),
-                        "playerTakingConWithoutShowingUp" => $currentRound->getPlayerTakingConWithoutShowingUp(),
-                        "roundCashBox" => $currentRound->getRoundCashBox(),
-                        "isRoundEndWithoutShowingUp" => $currentRound->isRoundEndWithoutShowingUp(),
-                        "balanceOfAllPlayers" => Game::getBalanceOfAllPlayers(),
-                        "defaultBet" => Game::getDefaultBet(),
-                        "stepInBets" => Game::getStepInBets(),
-                        "bets" => $currentRound->getRoundBets(),
-                        "winner" => $currentRound->getWinner(),
-                        "savingPlayers" =>$currentRound->getSavingPlayers(),
-                        "toCollate" => $currentRound->getNextStepPlayerToCollate()
-                    ];
+
                     $this->clients->attach($player_sender);
-                    $reconnectingPlayer->getConnection()->send(json_encode($roundStateAfterReconnect));
+
+                    $dataForReconnecting['reconnectingPlayer']
+                        ->getConnection()
+                        ->send(json_encode($dataForReconnecting['roundStateAfterReconnect']));
                 }
             }
         }
         
         if (isset($player_data['makingBet']) && $player_data['makingBet']) {
-            /*foreach (Game::getAllPlayers() as $player) {
-                var_dump('resourceId: '.$player->getConnResourceId());
-                var_dump('id: '.$player->getId());
-            }
-            var_dump($player_sender->resourceId);*/
             foreach (Game::getAllPlayers() as $player) {
                 if ($player->getConnection() == $player_sender) {
                     $response = $player->makeBet((int)$player_data["betSum"]);
@@ -188,30 +102,57 @@ class ChatSocket extends BaseSocket
                     }
                 }
             }
+            if (!Game::isCooking()) {
 
-            $currentRound = Game::getCurrentRound();
+                $currentRound = Game::getCurrentRound();
 
-            $dataAboutRoundState = [
-                "roundStateAfterBetting" => true,
-                "currentStepPlayer" => $currentRound->getCurrentStepPlayer()->getName(),
-                "nextStepPlayer" => $currentRound->getNextStepPlayer()->getName(),
-                "playerOpenCardAbility" => $currentRound->getPlayerOpenCardAbility(),
-                "lastBet" => $currentRound->getLastBet(),
-                "playerTakingConWithoutShowingUp" => $currentRound->getPlayerTakingConWithoutShowingUp(),
-                "roundCashBox" => $currentRound->getRoundCashBox(),
-                "isRoundEndWithoutShowingUp" => $currentRound->isRoundEndWithoutShowingUp(),
-                "balanceOfAllPlayers" => Game::getBalanceOfAllPlayers(),
-                "defaultBet" => Game::getDefaultBet(),
-                "stepInBets" => Game::getStepInBets(),
-                "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
-                "bets" => $currentRound->getRoundBets(),
-                "winner" => $currentRound->getWinner(),
-                "savingPlayers" =>$currentRound->getSavingPlayers(),
-                "toCollate" => $currentRound->getNextStepPlayerToCollate()
-            ];
-            
-            foreach ($this->clients as $client) {
-                $client->send(json_encode($dataAboutRoundState));
+                $dataAboutRoundState = [
+                    "roundStateAfterBetting" => true,
+                    "isCooking" => Game::isCooking(),
+                    "currentStepPlayer" => $currentRound->getCurrentStepPlayer()->getName(),
+                    "nextStepPlayer" => $currentRound->getNextStepPlayer()->getName(),
+                    "playerOpenCardAbility" => $currentRound->getPlayerOpenCardAbility(),
+                    "lastBet" => $currentRound->getLastBet(),
+                    "playerTakingConWithoutShowingUp" => $currentRound->getPlayerTakingConWithoutShowingUp(),
+                    "roundCashBox" => $currentRound->getRoundCashBox(),
+                    "isRoundEndWithoutShowingUp" => $currentRound->isRoundEndWithoutShowingUp(),
+                    "balanceOfAllPlayers" => Game::getBalanceOfAllPlayers(),
+                    "defaultBet" => Game::getDefaultBet(),
+                    "stepInBets" => Game::getStepInBets(),
+                    "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
+                    "bets" => $currentRound->getRoundBets(),
+                    "winner" => $currentRound->getWinner(),
+                    "savingPlayers" =>$currentRound->getSavingPlayers(),
+                    "toCollate" => $currentRound->getNextStepPlayerToCollate()
+                ];
+                
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAboutRoundState));
+                }
+            } else {
+                $currentCooking = Game::getCurrentCooking();
+
+                $dataAboutRoundState = [
+                    "roundStateAfterBetting" => true,
+                    "isCooking" => Game::isCooking(),
+                    "currentStepPlayer" => $currentCooking->getCurrentStepPlayer()->getName(),
+                    "nextStepPlayer" => $currentCooking->getNextStepPlayer()->getName(),
+                    "playerOpenCardAbility" => $currentCooking->getPlayerOpenCardAbility(),
+                    "lastBet" => $currentCooking->getLastBet(),
+                    "playerTakingConWithoutShowingUp" => $currentCooking->getPlayerTakingConWithoutShowingUp(),
+                    "roundCashBox" => $currentCooking->getCashBox(),
+                    "balanceOfAllPlayers" => $currentCooking->getBalanceOfAllPlayers(),
+                    "defaultBet" => Game::getDefaultBet(),
+                    "stepInBets" => Game::getStepInBets(),
+                    "bets" => $currentCooking->getRoundBets(),
+                    "winner" => $currentCooking->getWinner(),
+                    "savingPlayers" =>$currentCooking->getSavingPlayers(),
+                    "toCollate" => $currentCooking->getNextStepPlayerToCollate()
+                ];
+                
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAboutRoundState));
+                }
             }
         } else if (isset($player_data['checkUserCardsValue']) && $player_data['checkUserCardsValue']) {
 
@@ -292,24 +233,56 @@ class ChatSocket extends BaseSocket
                             "face" => $card->getFace()
                         ];
                     }
-                    
                     $someNotWinnersAgreeToCook = [
                         "someNotWinnersAgreeToCook" => true,
                         'isCooking' => Game::isCooking(),
-                        
+                        'lastRoundCashBox' => Game::getLastRoundCashBox(),
+                        "cards" => $cardsNormalizedForUser,
+                        "name" =>$player->getName(),
+                        "balance" =>$player->getBalance(),
+                        "allPlayers" => Game::getAllPlayersNormalizedForGame(),
+                        "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
+                        "currentDistributor" => Game::getCurrentDistributor()->getName(),
+                        "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
+                        "currentRoundId" => Game::getCurrentRoundId(),
+                        "stepInBets" => Game::getStepInBets(),
+                        "savingPlayers" =>Game::getCurrentRound()->getSavingPlayers(),
                     ];
                     
                     $player->getConnection()->send(json_encode($someNotWinnersAgreeToCook));
                 }
             } else if (Game::isAllWinnersAgreedToCook()) {
+                foreach (Game::getAllPlayers() as $player) {
+                    
+                    $cardsRaw = $player->getCardsOnHand();
+                    $cardsNormalizedForUser = [];
 
-                $allWinnersAgreeToCook = [
-                    'allWinnersAgreeToCook' => true,
-                    'winners' => Game::getCurrentRound()->getWinnerAfterOpeningCards()
-                ];
-
-                foreach ($this->clients as $client) {
-                    $client->send(json_encode($allWinnersAgreeToCook));
+                    foreach ($cardsRaw as $card) {
+                        $cardsNormalizedForUser[] = [
+                            "name" => $card->getName(),
+                            "suit" => $card->getSuit(),
+                            "face" => $card->getFace()
+                        ];
+                    }
+                    $allWinnersAgreeToCook = [
+                        'allWinnersAgreeToCook' => true,
+                        'winners' => Game::getLastRoundWinnerNormalized(),
+                        'isCooking' => Game::isCooking(),
+                        'lastRoundCashBox' => Game::getLastRoundCashBox(),
+                        "cards" => $cardsNormalizedForUser,
+                        "name" => $player->getName(),
+                        "balance" => $player->getBalance(),
+                        'allPlayers' => Game::getAllPlayersNormalizedForGame(),
+                        "cookingPlayers" => Game::getCurrentCooking()->getPlayersNormalized(),
+                        "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
+                        "currentDistributor" => Game::getCurrentDistributor()->getName(),
+                        "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
+                        "currentCookingId" => Game::getCurrentCookingId(),
+                        "stepInBets" => Game::getStepInBets(),
+                        "defaultBet" => Game::getDefaultBet(),
+                    ];
+                    
+                    $player->getConnection()->send(json_encode($allWinnersAgreeToCook));
                 }
             } else if (Game::isNoneNotWinnersAgreedToCook()) {
 

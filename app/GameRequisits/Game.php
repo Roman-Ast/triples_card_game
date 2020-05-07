@@ -13,11 +13,13 @@ class Game
 {
     private static $players = [];
     private static $rounds = [];
+    private static $cookings = [];
     private static $connectAbility = true;
     private static $allPlayersReady = false;
     private static $isCooking = false;
     private static $currentRoundId = 0;
     private static $currentRound;
+    private static $currentCooking;
     private static $currentDistributor;
     private static $first_word_player;
     private static $lastRoundWinner;
@@ -27,6 +29,8 @@ class Game
     private static $allwinnersAgreedToCook = false;
     private static $allPlayersWinners = false;
     private static $cookingPlayers = [];
+    private static $currentCookingId = 0;
+    private static $lastCookingCashBox;
     private const DEFAULT_BET = 50;
     private const STEP_IN_BETS = 10;
     private const TAX = 10;
@@ -66,8 +70,16 @@ class Game
         }
         //если все непобедители высказались и кто-то из них согласился на свару
         if (self::allNotWinnersSaid() && self::someNotWinnersAgreeToCook()) {
+            //если кто-то из непобедителей согласен, то проставляем всем победителям "согласен на свару"
+            foreach (self::$cookingPlayers as $index => $item) {
+                if (in_array($item['name'], self::getCurrentRound()->getWinnerAfterOpeningCards())) {
+                    self::$cookingPlayers[$index]['readyForCook'] = $readiness;
+                }
+            }
+            
             self::$isCooking = true;
             self::$someNotWinnerAgreedToCook = true;
+            self::startCooking();
         } 
         //если все непобедители высказались и все отказались от свары то $someNotWinnerAgreedToCook останется false
         elseif (self::allNotWinnersSaid() && !self::someNotWinnersAgreeToCook() && !self::$allPlayersWinners && !self::allWinnersSaid()) {
@@ -77,6 +89,7 @@ class Game
         elseif (self::allWinnersSaid() && self::allWinnersAgreeToCook()) {
             self::$isCooking = true;
             self::$allwinnersAgreedToCook = true;
+            self::startCooking();
         }
     }
 
@@ -127,8 +140,6 @@ class Game
         return true;
     }
 
-
-
     public static function isNoneNotWinnersAgreedToCook()
     {
         return self::$noneNotWinnersAgreedToCook;
@@ -144,10 +155,49 @@ class Game
         return self::$someNotWinnerAgreedToCook;
     }
 
+    public static function startCooking()
+    {  
+        foreach (self::$players as $player) {
+            $player->changeRadinessAfterEndingRound();
+            $player->dropCards();
+        }
+        
+        self::$connectAbility = false;
+        self::$currentCookingId += 1;
+        $cooking = new Cooking(
+                self::$currentCookingId,
+                self::getCookingPlayers(),
+                self::$lastRoundCashBox
+            );
+        self::$currentCooking = $cooking;
+        self::$cookings[self::$currentCookingId] = $cooking;
+        self::$allPlayersReady = true;
+        $cooking->setCashBox(self::$lastRoundCashBox);
+        //self::setPlayersRefusedFromCooking();    
+        $cooking->start();  
+    }
+
+    public static function getCookingPlayers()
+    {
+        $cooking = [];
+        foreach (self::$cookingPlayers as $item) {
+            if ($item['readyForCook']) {
+                $cooking[] = $item['player'];
+            }
+        }
+        return $cooking;
+    }
+
     public static function setLastRoundCashBox(int $cashBox)
     {
         self::$lastRoundCashBox = $cashBox;
     }
+
+    public static function setLastCookingCashBox(int $cashBox)
+    {
+        self::$lastCookingCashBox = $cashBox;
+    }
+
 
     public static function getLastRoundCashBox()
     {
@@ -159,9 +209,28 @@ class Game
         self::$lastRoundWinner = $winner;
     }
 
+    public static function setLastCookingWinner(array $winner)
+    {
+        self::$lastCookingWinner = $winner;
+    }
+
     public static function getLastRoundWinner()
     {
         return self::$lastRoundWinner;
+    }
+
+    public static function getLastCookingndWinner()
+    {
+        return self::$lastCookingWinner;
+    }
+
+    public static function getLastRoundWinnerNormalized()
+    {
+        $normalized = [];
+        foreach (self::$lastRoundWinner as $player) {
+            $normalized[] = $player->getName();
+        }
+        return $normalized;
     }
 
     public static function deletePlayerDueToDisconnect(ConnectionInterface $conn):void
@@ -198,6 +267,17 @@ class Game
     }
     public static function getAllPlayers()
     {
+        /*if (self::$isCooking) {
+            $playersReadyToCook = [];
+
+            foreach (self::$cookingPlayers as $item) {
+                if ($item['readyForCook']) {
+                    $playersReadyToCook[] = $item['player'];
+                }
+            }
+
+            return $playersReadyToCook;
+        }*/
         return self::$players;
     }
 
@@ -208,8 +288,6 @@ class Game
             self::$currentRoundId += 1;
             $round = new Round(self::$currentRoundId);
             self::$currentRound = $round;
-            self::$currentRound->setStatus('round');
-            self::$currentRound->setCashBox(0);
             self::$rounds[self::$currentRoundId] = $round;
             self::$allPlayersReady = true;
             
@@ -248,9 +326,19 @@ class Game
         return self::$currentRoundId;
     }
 
+    public static function getCurrentCookingId()
+    {
+        return self::$currentCookingId;
+    }
+
     public static function getCurrentRound()
     {
         return self::$currentRound;
+    }
+
+    public static function getCurrentCooking()
+    {
+        return self::$currentCooking;
     }
 
     public static function getRounds()

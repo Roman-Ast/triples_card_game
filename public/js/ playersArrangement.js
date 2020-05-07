@@ -16,6 +16,7 @@ const createPlayerContainer = (elementName, currentPlayerName, currentDistributo
     const playerContainer = document.createElement("div");
     playerContainer.classList.add("playerContainer");
     const imgContainer = document.createElement("div");
+    imgContainer.classList.add('imgContainer');
     const playerNameContainer = document.createElement("div");
     const playerDataContainer = document.createElement("div");
     const img = new Image(36, 28);

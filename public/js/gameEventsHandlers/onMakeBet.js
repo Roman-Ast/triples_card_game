@@ -43,9 +43,14 @@ const onMakeBet = (msgObject) => {
     }
 
     //добавляем все ставки игроков в общую кассу на столе
-    const sumOfDefaultBets = msgObject.defaultBets.reduce((acc, item) => acc + item.defaultBet, 0);
     const sumOfBets = Object.values(msgObject.bets).reduce((acc, item) => acc + item, 0);
-    $('#cashBoxSum').text(sumOfDefaultBets + sumOfBets);
+    
+    if (!msgObject.isCooking) {
+        const sumOfDefaultBets = msgObject.defaultBets.reduce((acc, item) => acc + item.defaultBet, 0);
+        $('#cashBoxSum').text(sumOfDefaultBets + sumOfBets);
+    }
+    
+   
 
     //если есть возможность открыть карты
     if (msgObject.playerOpenCardAbility) {

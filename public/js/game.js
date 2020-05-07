@@ -7,7 +7,6 @@ import onNextRound from './gameEventsHandlers/onNextRound.js';
 import playersArrangement from './ playersArrangement.js';
 import onBalanceError from './gameEventsHandlers/onBalanceError.js';
 import onCook from './gameEventsHandlers/onCook.js';
-import askedWinnersForCooking from './gameEventsHandlers/onAskedWinnersForCooking.js';
 import someNotWinnersAgreeToCook from './gameEventsHandlers/onSomeNotWinnersAgreeToCook.js';
 import noneNotWinnersAgreedToCook from './gameEventsHandlers/onNoneNotWinnersAgreedToCook.js';
 import allWinnersAgreeToCook from './gameEventsHandlers/onAllWinnersAgreeToCook.js';
@@ -117,7 +116,6 @@ const socketUnit = {
             nextRound: onNextRound,
             balanceError: onBalanceError,
             dataForCooking: onCook,
-            askedWinnersForCooking,
             someNotWinnersAgreeToCook,
             noneNotWinnersAgreedToCook,
             allWinnersAgreeToCook,

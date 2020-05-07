@@ -9,7 +9,7 @@ class Diller
 {
     private const NUMBER_OF_CARDS_ON_HAND = 3;
 
-    public static function distribute()
+    public static function distribute(array $players)
     {
         $deckRaw = new Deck();
         $deck = $deckRaw->getDeck();
@@ -21,7 +21,7 @@ class Diller
         shuffle($deck);
         shuffle($deck);
         
-        foreach (Game::getAllPlayers() as $player) {
+        foreach ($players as $player) {
             if ($player->getName() === 'Римма') {
                 $player->takeCard(new Card(5, "Король", "Червы", 10, '/images/cards/king-hearts.png'));
                 $player->takeCard(new Card(13, "Валет", "Червы", 10, '/images/cards/valet-hearts.png'));
@@ -48,10 +48,8 @@ class Diller
         }
     }
 
-    public static function checkUserCardsValue()
+    public static function checkUserCardsValue(array $players)
     {
-        $players = Game::getAllPlayers();
-
         foreach ($players as $player) {
             $cards = $player->getCardsOnHand();
             

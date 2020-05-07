@@ -91,8 +91,8 @@
         <script src="{{ URL::asset('js/gameEventsHandlers/onRoundStart.js') }}" async type="module"></script>
         <script src="{{ URL::asset('js/gameEventsHandlers/onCheckConnection.js') }}" type="module"></script>
         <script src="{{ URL::asset('js/gameEventsHandlers/onBalanceError.js') }}" type="module"></script>
+        <script src="{{ URL::asset('js/gameEventsHandlers/onNoneNotWinnersAgreedToCook.js') }}" type="module"></script>
         <script src="{{ URL::asset('js/gameEventsHandlers/onAllWinnersAgreeToCook.js') }}" type="module"></script>
-        <script src="{{ URL::asset('js/gameEventsHandlers/onAskedWinnersForCooking.js') }}" type="module"></script>
-        <script src="{{ URL::asset('js/gameEventsHandlers/onAskedWinnersForCooking.js') }}" type="module"></script>
+        <script src="{{ URL::asset('js/gameEventsHandlers/onSomeNotWinnersAgreeToCook.js') }}" type="module"></script>
     </body>
 </html>

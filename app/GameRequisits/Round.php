@@ -49,26 +49,11 @@ class Round
 
     public function start()
     {
-        Diller::distribute();
+        Diller::distribute(Game::getAllPlayers());
         $this->takeDefaultBet();
         $this->setDistributor();
         $this->setFirstWordPlayer();
         $this->setInitRoundParameters();
-    }
-
-    public function setStatus(string $status)
-    {
-        $this->status = $status;
-    }
-
-    public function setCashBox(int $cashBox)
-    {
-        $this->cashBox = $cashBox;
-    }
-
-    public function getStatus()
-    {
-        return $this->status;
     }
 
     public function getSumOfDeafultBets()
@@ -135,20 +120,18 @@ class Round
 
     private function takeDefaultBet()
     {
-        if (Game::isCooking()) {
-            //создаем массив вида игрок => дефолтная ставка
-            foreach (Game::getAllPlayers() as $player) {
-                $this->defaultBets[] = [
-                    "betMaker" => $player->getName(),
-                    "defaultBet" => 
-                        $player->makeDefaultBet(self::DEFAULT_BET)
-                ];
-            }
+        //создаем массив вида игрок => дефолтная ставка
+        foreach (Game::getAllPlayers() as $player) {
+            $this->defaultBets[] = [
+                "betMaker" => $player->getName(),
+                "defaultBet" => 
+                    $player->makeDefaultBet(self::DEFAULT_BET)
+            ];
+        }
 
-            //добавляем дефолтные ставки к общей сумме кона
-            foreach ($this->defaultBets as $item) {
-                $this->sumOfDefaultBets += $item['defaultBet'];
-            }
+        //добавляем дефолтные ставки к общей сумме кона
+        foreach ($this->defaultBets as $item) {
+            $this->sumOfDefaultBets += $item['defaultBet'];
         }
     }
 
@@ -180,7 +163,6 @@ class Round
     public function setDistributor()
     {
         $players = Game::getAllPlayers();
-        
         if ($this->id == 1) {
             $rand = rand(0, count($players) - 1);
             $this->distributor = $players[$rand];
@@ -209,7 +191,7 @@ class Round
                 $currentDistributorIndex = $index;
             }
         }
-
+        
         if (isset($players[$currentDistributorIndex + 1])) {
             $this->first_word_right = $players[$currentDistributorIndex + 1];
         } else {
@@ -273,7 +255,7 @@ class Round
             }
         }
 
-        //находим в игроках данный resourceId
+        //находим в игроках данный Id
         foreach (Game::getAllPlayers() as $player) {
             if ($player->getId() === $nextStepPlayerId) {
                 return $player;
@@ -332,7 +314,7 @@ class Round
                 }
             }
         }
-
+        
         if ($bet > 0) {
             $this->lastBet = $bet;
         } else if ($bet === 0) {
@@ -524,7 +506,8 @@ class Round
         foreach ($players as $index => $player) {
             $this->roundParameters[] = [
                 'id' => $player->getId(),
-                'state' => null
+                'state' => null,
+                'player' => $player
             ];
         }
     }
@@ -594,7 +577,7 @@ class Round
 
     public function checkUserCardsValue()
     {
-        Diller::checkUserCardsValue();
+        Diller::checkUserCardsValue(Game::getAllPlayers());
     }
 
     public function endRoundWithoutShowingUp()

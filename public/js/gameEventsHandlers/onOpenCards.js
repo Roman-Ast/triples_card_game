@@ -15,9 +15,7 @@ const onOpenCards = (msgObject) => {
         $('#cooking').show();
     } else if (msgObject.winnerAfterOpening.length > 1) {
         if (msgObject.winnerAfterOpening.includes($('#playerName').text())) {
-            $('button').each(function () {
-                $(this).hide();
-            });
+            $('#bet').hide();
         } else {
             $('#cooking').show();
             $('#notCooking').show();
