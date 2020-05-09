@@ -5,6 +5,10 @@ const allWinnersAgreeToCook = (msgObject) => {
     $('.playerContainer').detach();
     $('#betSum').empty();
     $('#myCards').empty();
+    $('.playerBetField').empty();
+
+    $('#round-status').text('свара');
+    
     
     if (!msgObject.winners.includes($('#playerName').text())) {
         $('#cooking').hide();
@@ -17,6 +21,7 @@ const allWinnersAgreeToCook = (msgObject) => {
         $('#save').show();
         $('#shareCashBoxAfterOpening').hide();
         $('#cooking').hide();
+        $('#collate').hide();
     }
 
     if (msgObject.name === msgObject.currentFirstWordPlayer) {
@@ -24,6 +29,11 @@ const allWinnersAgreeToCook = (msgObject) => {
         $("#save").removeAttr("disabled");
         $("#collate").removeAttr("disabled");
         $("#betSum").prop("disabled", false);
+    } else {
+        $("#makeBet").attr("disabled", true);
+        $("#save").attr("disabled", true);
+        $("#collate").attr("disabled", true);
+        $("#betSum").prop("disabled", true);
     }
 
     for (let i = msgObject.defaultBet; i < 3000; i += msgObject.stepInBets) {
@@ -52,11 +62,18 @@ const allWinnersAgreeToCook = (msgObject) => {
         cardsContainer.appendChild(cardContainer);
     });
     
-    const cookingPlayersNames = msgObject.cookingPlayers.map(item => item.name);
     //если игрок не варит убираем у него рубашку
     $('.playerContainer').each(function () {
-        if (!cookingPlayersNames.includes($(this).attr('ownerName'))) {
+        if (!msgObject.cookingPlayers.includes($(this).attr('ownerName'))) {
             $(this).children().first().empty();
+        }
+    });
+    //если игрок не варит ставим ему "пасс"
+    $('.playerBetField').each(function () {
+        if (!msgObject.cookingPlayers.includes($(this).attr('ownerName'))) {
+            $(this).text('пасс');
+            $(this).css({'color': 'red'});
+            $(this).css({'font-style': 'italic'});
         }
     });
     

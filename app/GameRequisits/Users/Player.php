@@ -49,6 +49,12 @@ class Player
         return $defaultBet;
     }
 
+    public function substractHalfCashBoxSum(int $cashBox)
+    {
+        $this->balance -= $cashBox / 2;
+        return $cashBox / 2;
+    }
+
     public function makeBet(int $bet)
     {
         if ($this->balance - $bet < 0) {

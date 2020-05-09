@@ -52,7 +52,7 @@ class Diller
     {
         foreach ($players as $player) {
             $cards = $player->getCardsOnHand();
-            
+            //var_dump($cards);
             foreach ($cards as $index => $card) {
                 if ($card->getName() == 'Семь' && $card->getSuit() == 'Пики') {
                     $cardsWithProcessedSeven = $card->becomeSuitable($cards);
@@ -118,6 +118,8 @@ class Diller
 
     private static function checkForTriples(array $cards)
     {
+        
+        
         $standardCardName = $cards[0]->getName();
         $isTriples = \collect($cards)->every(function($item, $key) use ($standardCardName) {
             return $item->getName() === $standardCardName;

@@ -28,7 +28,6 @@ const onMakeBet = (msgObject) => {
             if (name === $(this).attr('ownerName')) {
                 $(this).text('пасс');
                 $(this).css({'color': 'red'});
-                $(this).css({'text-shadow': '1px 1px 2px #fff'});
                 $(this).css({'font-style': 'italic'});
             }
         });
@@ -37,8 +36,8 @@ const onMakeBet = (msgObject) => {
     //если есть возможность колировать(поддержать), то показываем соответствующую кнопку
     if (msgObject.toCollate) {
         if ($("#playerName").text() === msgObject.nextStepPlayer) {
-            $(collateSum).text(msgObject.toCollate);
             $('#collate').show();
+            $(collateSum).text(msgObject.toCollate);
         }
     }
 
@@ -48,6 +47,8 @@ const onMakeBet = (msgObject) => {
     if (!msgObject.isCooking) {
         const sumOfDefaultBets = msgObject.defaultBets.reduce((acc, item) => acc + item.defaultBet, 0);
         $('#cashBoxSum').text(sumOfDefaultBets + sumOfBets);
+    } else {
+        $('#cashBoxSum').text(msgObject.roundCashBox);
     }
     
    
@@ -110,7 +111,8 @@ const onMakeBet = (msgObject) => {
         }
     }
 
-    $("#playerBalance").html(msgObject.balanceOfAllPlayers[$("#playerName").text()]);
+    $("#playerBalance").text(msgObject.balanceOfAllPlayers[$("#playerName").text()]);
+    
     
     //блокируем кнопки тем, кто не ходит и разблокируем тому, чей ход
     if (msgObject.nextStepPlayer !== $("#playerName").text()) {
@@ -118,11 +120,19 @@ const onMakeBet = (msgObject) => {
         $("#makeBet").attr('disabled', true);
         $('#betSum').prop('disabled', true);
         $('#collate').attr('disabled', true);
+        
+    
     } else {
         $("#save").removeAttr('disabled');
         $("#makeBet").removeAttr('disabled');
         $('#collate').removeAttr('disabled');
         $('#betSum').prop('disabled', false);
+        if ( $("#playerBalance").text() < msgObject.toCollate || $("#playerBalance").text() < msgObject.defaultBet) {
+            $('#betSum').prop('disabled', true);
+            $('#collate').attr('disabled', true);
+            $('#makeBet').attr('disabled', true);
+            $("#playerBalance").css({'color': 'red'});
+        }
     }        
 };
 

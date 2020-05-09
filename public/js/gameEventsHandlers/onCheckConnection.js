@@ -19,7 +19,13 @@ const onCheckConnection = (msgObject) => {
         }
         
         $('#connectedPlayers').append(connectedPlayer);
-    });   
+    });
+    
+    if (connectedPlayers.length < 3) {
+        $('#startPlay').attr('disabled', true);
+    } else {
+        $('#startPlay').removeAttr('disabled');
+    }
 };
 
 export default onCheckConnection;

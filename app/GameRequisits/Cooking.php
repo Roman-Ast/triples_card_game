@@ -25,12 +25,16 @@ class Cooking
     private $playerTakingConWithoutShowingUp;
     private $lastBet = 0;
     private $winner;
+    private $isFirstRoundOfSales = true;
+    private $winnerAfterOpeningCards;
+    private $lastRoundCashBox;
 
-    public function __construct(int $id, array $players, int $cashBox)
+    public function __construct(int $id, array $players, int $sum)
     {
         $this->id = $id;
         $this->players = $players;
-        $this->cashBox = $cashBox;
+        $this->lastRoundCashBox += $sum;
+        var_dump($this->lastRoundCashBox);
     }
 
     public function start()
@@ -61,7 +65,7 @@ class Cooking
             
             Game::setCurrentDistributor($this->distributor);
         } else {
-            $winners = Game::getLastCookingWinner();
+            $winners = Game::getLastRoundWinner();
 
             if (count($winners) === 1) {
                 $this->distributor = $winners[0];
@@ -162,6 +166,11 @@ class Cooking
         return false;
     }
 
+    public function getRoundCashBox()
+    {
+        return $this->cashBox;
+    }
+    
     public function getSavingPlayers()
     {
         $arrplayersSaving = [];
@@ -205,17 +214,9 @@ class Cooking
     {
         $players = [];
         foreach ($this->players as $player) {
-            $players[] = [
-                'name' => $player->getName(),
-                'balance' => $player->getBalance()
-            ];
+            $players[] = $player->getName();
         }
         return $players;
-    }
-
-    public function setCashBox(int $sum)
-    {
-        $this->cashBox = $sum;
     }
 
     public function getCashBox()
@@ -262,9 +263,9 @@ class Cooking
         
         //суммируем в общую кассу ставкиы
         $this->cashBox = \collect($this->bets)->sum();
-
+        $this->cashBox += $this->lastRoundCashBox;
         //игрок который ходит сейчас
-        $players = Game::getAllPLayers();
+        $players = $this->players;
         $this->currentStepPlayer = $playerSteping;
 
         foreach ($players as $index => $player) {
@@ -311,7 +312,7 @@ class Cooking
         $this->nextStepPlayer = $this->setNextStepPlayer();
 
         if ($playerOpenCardAbility) {
-            Game::setLastCookingCashBox($this->cashBox);
+            Game::setLastRoundCashBox($this->cashBox);
             foreach ($this->players as $key => $player) {
                 if ($player->getId() == $playerOpenCardAbility) {
                     $this->playerOpenCardAbility = $player;
@@ -484,13 +485,39 @@ class Cooking
         return $playerOpenCardAbility;
     }
 
-
-
-
-
-
     public function checkUserCardsValue()
     {
         Diller::checkUserCardsValue($this->players);
+    }
+    
+    public function setWinnerAfterOpeningCards()
+    {
+        $maxValue = \collect(Game::getPlayersPointsAfterOpeningCards())->max('points');
+
+        $playersWithMaxPoints = [];
+        foreach ($this->players as $player) {
+            if (
+                $player->getCardsValueAfterOpening() == $maxValue 
+                && !in_array($player->getName(), $this->getSavingPlayers())
+                ) {
+                $playersWithMaxPoints[] = $player;
+            }
+        }
+        
+        Game::setLastRoundWinner($playersWithMaxPoints);
+        $this->winnerAfterOpeningCards = $playersWithMaxPoints;
+    }
+
+    public function getWinnerAfterOpeningCards()
+    {
+        if (count($this->winnerAfterOpeningCards) === 1) {
+            return [$this->winnerAfterOpeningCards[0]->getName()];
+        } else {
+            foreach ($this->winnerAfterOpeningCards as $player) {
+                $playersWinners[] = $player->getName();
+            }
+
+            return $playersWinners;
+        }
     }
 }

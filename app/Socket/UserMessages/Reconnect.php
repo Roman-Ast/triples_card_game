@@ -2,9 +2,12 @@
 
 namespace App\Socket\UserMessages;
 
+use Ratchet\ConnectionInterface;
+use App\GameRequisits\Game;
+
 class Reconnect
 {
-    public static function check(array $player_data, Player $player_sender)
+    public static function check(array $player_data, ConnectionInterface $player_sender)
     {
         foreach (Game::getAllPlayers() as $player) {
             if ((int)$player->getId() === (int)$player_data['id']) {
@@ -27,7 +30,9 @@ class Reconnect
                 "face" => $card->getFace()
             ];
         }
-        
+
+        $currentRound = Game::getCurrentRound();
+
         $roundStateAfterReconnect = [
             "reconnect" => true,
             "cards" => $cardsNormalizedForUser,
@@ -35,7 +40,7 @@ class Reconnect
             "balance" =>$reconnectingPlayer->getBalance(),
             "allPlayers" => Game::getAllPlayersNormalizedForGame(),
             "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
-            "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
+            "defaultBets" => $currentRound->getRoundDefaultBets(),
             "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
             "currentRoundId" => Game::getCurrentRoundId(),
             "currentDistributor" => Game::getCurrentDistributor()->getName(),

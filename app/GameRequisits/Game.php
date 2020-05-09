@@ -30,7 +30,7 @@ class Game
     private static $allPlayersWinners = false;
     private static $cookingPlayers = [];
     private static $currentCookingId = 0;
-    private static $lastCookingCashBox;
+    private static $winnersIds = [];
     private const DEFAULT_BET = 50;
     private const STEP_IN_BETS = 10;
     private const TAX = 10;
@@ -42,6 +42,11 @@ class Game
 
     public static function informAboutCooking(Player $informingPlayer, bool $readiness)
     {
+        if (!in_array($informingPlayer->getId(), self::$winnersIds) && $readiness) {
+            $halfCashBox = $informingPlayer->substractHalfCashBoxSum(self::$lastRoundCashBox);
+            self::$lastRoundCashBox += $halfCashBox;
+        }
+        
         if (count(self::$cookingPlayers) < 1) {
             foreach (self::$players as $player) {
                 self::$cookingPlayers[] = [
@@ -49,8 +54,15 @@ class Game
                     'name' => $player->getName(),
                     'player' => $player,
                     'readyForCook' => null,
-                    'winnerOfLastRound' => in_array($player->getName(), self::getCurrentRound()->getWinnerAfterOpeningCards()) ? true : false
+                    'winnerOfLastRound' => null
                 ];
+            }
+            foreach (self::$cookingPlayers as $index => $item) {
+                if (in_array($item['id'], self::$winnersIds)) {
+                    self::$cookingPlayers[$index]['winnerOfLastRound'] = true;
+                } else {
+                    self::$cookingPlayers[$index]['winnerOfLastRound'] = false;
+                }
             }
             foreach (self::$cookingPlayers as $index => $item) {
                 if ($item['player']->getId() == $informingPlayer->getId()) {
@@ -64,6 +76,8 @@ class Game
                 }
             }
         }
+        var_dump(self::$winnersIds);
+        var_dump(self::$cookingPlayers);
         //если у всех одинаковое кол-во очков и все сказали и все согласны варить
         if (count(self::$players) === count(self::$lastRoundWinner)){
             self::$allPlayersWinners = true;
@@ -71,9 +85,10 @@ class Game
         //если все непобедители высказались и кто-то из них согласился на свару
         if (self::allNotWinnersSaid() && self::someNotWinnersAgreeToCook()) {
             //если кто-то из непобедителей согласен, то проставляем всем победителям "согласен на свару"
+            
             foreach (self::$cookingPlayers as $index => $item) {
-                if (in_array($item['name'], self::getCurrentRound()->getWinnerAfterOpeningCards())) {
-                    self::$cookingPlayers[$index]['readyForCook'] = $readiness;
+                if (in_array($item['id'], self::$winnersIds)) {
+                    self::$cookingPlayers[$index]['readyForCook'] = true;
                 }
             }
             
@@ -172,8 +187,6 @@ class Game
         self::$currentCooking = $cooking;
         self::$cookings[self::$currentCookingId] = $cooking;
         self::$allPlayersReady = true;
-        $cooking->setCashBox(self::$lastRoundCashBox);
-        //self::setPlayersRefusedFromCooking();    
         $cooking->start();  
     }
 
@@ -188,16 +201,22 @@ class Game
         return $cooking;
     }
 
+    public static function getInfoAboutCookingPlayers()
+    {
+        $info = [];
+        foreach (self::$cookingPlayers as $item) {
+            $info[] = [
+                'name' => $item['player']->getName(),
+                'cooking' => $item['readyForCook']
+            ];
+        }
+        return $info;
+    }
+
     public static function setLastRoundCashBox(int $cashBox)
     {
         self::$lastRoundCashBox = $cashBox;
     }
-
-    public static function setLastCookingCashBox(int $cashBox)
-    {
-        self::$lastCookingCashBox = $cashBox;
-    }
-
 
     public static function getLastRoundCashBox()
     {
@@ -206,22 +225,21 @@ class Game
 
     public static function setLastRoundWinner(array $winner)
     {
+        self::$cookingPlayers = [];
+        self::$isCooking = false;
+        self::$allwinnersAgreedToCook = false;
+        self::$someNotWinnerAgreedToCook = false;
+        self::$noneNotWinnersAgreedToCook = false;
         self::$lastRoundWinner = $winner;
-    }
-
-    public static function setLastCookingWinner(array $winner)
-    {
-        self::$lastCookingWinner = $winner;
+        self::$winnersIds = [];
+        foreach (self::$lastRoundWinner as $player) {
+            self::$winnersIds[] = $player->getId();
+        }
     }
 
     public static function getLastRoundWinner()
     {
         return self::$lastRoundWinner;
-    }
-
-    public static function getLastCookingndWinner()
-    {
-        return self::$lastCookingWinner;
     }
 
     public static function getLastRoundWinnerNormalized()
@@ -267,17 +285,6 @@ class Game
     }
     public static function getAllPlayers()
     {
-        /*if (self::$isCooking) {
-            $playersReadyToCook = [];
-
-            foreach (self::$cookingPlayers as $item) {
-                if ($item['readyForCook']) {
-                    $playersReadyToCook[] = $item['player'];
-                }
-            }
-
-            return $playersReadyToCook;
-        }*/
         return self::$players;
     }
 
@@ -312,7 +319,9 @@ class Game
 
     public static function getAllPlayersNormalizedForGame()
     {
-        foreach (self::getAllPlayers() as $player) {
+        $players = self::getAllPlayers();
+
+        foreach ($players as $player) {
             $normalizedPlayers[] = [
                 'name' => $player->getName(),
                 'balance' => $player->getBalance()
@@ -414,31 +423,58 @@ class Game
 
     public static function getAllPlayersCards()
     {
-        foreach (self::$players as $player) {
-            if (!in_array($player->getName(), self::getCurrentRound()->getSavingPlayers())) {
-                $normalized[] = [
-                    'name' => $player->getName(),
-                    'cards' => array_map(function($card) {
-                        return $card->getFace();
-                    }, $player->getCardsOnHand())
-                ];
+        if (!Game::isCooking()) {
+            foreach (self::$players as $player) {
+                if (!in_array($player->getName(), self::getCurrentRound()->getSavingPlayers())) {
+                    $normalized[] = [
+                        'name' => $player->getName(),
+                        'cards' => array_map(function($card) {
+                            return $card->getFace();
+                        }, $player->getCardsOnHand())
+                    ];
+                }
             }
+           
+            return $normalized;
+        } else {
+            foreach (self::getCookingPlayers() as $player) {
+                if (!in_array($player->getName(), self::getCurrentCooking()->getSavingPlayers())) {
+                    $normalized[] = [
+                        'name' => $player->getName(),
+                        'cards' => array_map(function($card) {
+                            return $card->getFace();
+                        }, $player->getCardsOnHand())
+                    ];
+                }
+            }
+           
+            return $normalized;
         }
-       
-        return $normalized;
     }
 
     public static function getPlayersPointsAfterOpeningCards()
     {
-        foreach (self::$players as $player) {
-            if (!in_array($player->getName(), self::getCurrentRound()->getSavingPlayers())) {
-                $normalizedPoints[] = [
-                    'name' => $player->getName(),
-                    'points' => $player->getCardsValueAfterOpening()
-                ];
+        if (!self::isCooking()) {
+            foreach (self::$players as $player) {
+                if (!in_array($player->getName(), self::getCurrentRound()->getSavingPlayers())) {
+                    $normalizedPoints[] = [
+                        'name' => $player->getName(),
+                        'points' => $player->getCardsValueAfterOpening()
+                    ];
+                }
             }
+            return $normalizedPoints;
+        } else {
+            foreach (self::getCookingPlayers() as $player) {
+                if (!in_array($player->getName(), self::getCurrentCooking()->getSavingPlayers())) {
+                    $normalizedPoints[] = [
+                        'name' => $player->getName(),
+                        'points' => $player->getCardsValueAfterOpening()
+                    ];
+                }
+            }
+            return $normalizedPoints;
         }
-        return $normalizedPoints;
     }
 
     public static function endCurrentRound()

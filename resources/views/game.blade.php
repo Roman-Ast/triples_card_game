@@ -4,7 +4,9 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta http-equiv="Cache-Control" content="no-cache">
+        <meta http-equiv="Cache-control" content="no-cache">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Expires" content="-1">
         <title>Тринька</title>
         <link rel="stylesheet" href="{{ URL::asset('css/main.css') }}">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -36,6 +38,7 @@
                 <div id="table">
                     <div id="internalRound"></div>
                     <div id="cashBox">
+                        <div id="round-status"></div>
                         <div id="cashBoxSum"></div>
                         <img src="{{URL::asset('images/table/Coins.png')}}"style="width:100%" alt="card">
                     </div>

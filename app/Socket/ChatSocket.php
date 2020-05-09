@@ -147,7 +147,8 @@ class ChatSocket extends BaseSocket
                     "bets" => $currentCooking->getRoundBets(),
                     "winner" => $currentCooking->getWinner(),
                     "savingPlayers" =>$currentCooking->getSavingPlayers(),
-                    "toCollate" => $currentCooking->getNextStepPlayerToCollate()
+                    "toCollate" => $currentCooking->getNextStepPlayerToCollate(),
+                    'lastRoundCashBox' => Game::getLastRoundCashBox()
                 ];
                 
                 foreach ($this->clients as $client) {
@@ -156,22 +157,40 @@ class ChatSocket extends BaseSocket
             }
         } else if (isset($player_data['checkUserCardsValue']) && $player_data['checkUserCardsValue']) {
 
-            Game::getCurrentRound()->checkUserCardsValue();
-            Game::getCurrentRound()->setWinnerAfterOpeningCards();
+            if (!Game::isCooking()) {
+                Game::getCurrentRound()->checkUserCardsValue();
+                Game::getCurrentRound()->setWinnerAfterOpeningCards();
 
-            $dataAfterOpeningCards = [
-                "dataAfterOpeningCards" => true,
-                "totalCashBox" => 
-                    Game::getCurrentRound()->getRoundCashBox() +
-                    Game::getCurrentRound()->getSumOfDeafultBets(),
-                "playersPoints" => Game::getPlayersPointsAfterOpeningCards(),
-                "winnerAfterOpening" => Game::getCurrentRound()->getWinnerAfterOpeningCards(),
-                "allCards" => Game::getAllPlayersCards(),
-                "allPlayers" => Game::getAllPlayersNormalizedForGame(),
-            ];
+                $dataAfterOpeningCards = [
+                    "dataAfterOpeningCards" => true,
+                    "totalCashBox" => 
+                        Game::getCurrentRound()->getRoundCashBox() +
+                        Game::getCurrentRound()->getSumOfDeafultBets(),
+                    "playersPoints" => Game::getPlayersPointsAfterOpeningCards(),
+                    "winnerAfterOpening" => Game::getCurrentRound()->getWinnerAfterOpeningCards(),
+                    "allCards" => Game::getAllPlayersCards(),
+                    "allPlayers" => Game::getAllPlayersNormalizedForGame(),
+                ];
 
-            foreach ($this->clients as $client) {
-                $client->send(json_encode($dataAfterOpeningCards));
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAfterOpeningCards));
+                }
+            } else {
+                Game::getCurrentCooking()->checkUserCardsValue();
+                Game::getCurrentCooking()->setWinnerAfterOpeningCards();
+
+                $dataAfterOpeningCards = [
+                    "dataAfterOpeningCards" => true,
+                    "totalCashBox" => Game::getCurrentCooking()->getRoundCashBox(),
+                    "playersPoints" => Game::getPlayersPointsAfterOpeningCards(),
+                    "winnerAfterOpening" => Game::getCurrentCooking()->getWinnerAfterOpeningCards(),
+                    "allCards" => Game::getAllPlayersCards(),
+                    "allPlayers" => Game::getAllPlayersNormalizedForGame(),
+                ];
+
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAfterOpeningCards));
+                }
             }
 
         } else if (isset($player_data['endRoundWithoutShowingUp']) && $player_data['endRoundWithoutShowingUp']) {
@@ -221,7 +240,9 @@ class ChatSocket extends BaseSocket
                 }
             }
 
-            if (Game::isSomeNotWinnerAgreedToCook()) {
+            $playersCookingOrNotNormalized = Game::getInfoAboutCookingPlayers();
+
+            if (Game::isSomeNotWinnerAgreedToCook() && Game::allNotWinnersSaid()) {
                 foreach (Game::getAllPlayers() as $player) {
                     $cardsRaw = $player->getCardsOnHand();
                     $cardsNormalizedForUser = [];
@@ -235,18 +256,21 @@ class ChatSocket extends BaseSocket
                     }
                     $someNotWinnersAgreeToCook = [
                         "someNotWinnersAgreeToCook" => true,
+                        'winners' => Game::getLastRoundWinnerNormalized(),
                         'isCooking' => Game::isCooking(),
                         'lastRoundCashBox' => Game::getLastRoundCashBox(),
                         "cards" => $cardsNormalizedForUser,
-                        "name" =>$player->getName(),
-                        "balance" =>$player->getBalance(),
-                        "allPlayers" => Game::getAllPlayersNormalizedForGame(),
+                        "name" => $player->getName(),
+                        "balance" => $player->getBalance(),
+                        'allPlayers' => Game::getAllPlayersNormalizedForGame(),
+                        "cookingPlayers" => Game::getCurrentCooking()->getPlayersNormalized(),
                         "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
                         "currentDistributor" => Game::getCurrentDistributor()->getName(),
                         "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
-                        "currentRoundId" => Game::getCurrentRoundId(),
+                        "currentCookingId" => Game::getCurrentCookingId(),
                         "stepInBets" => Game::getStepInBets(),
-                        "savingPlayers" =>Game::getCurrentRound()->getSavingPlayers(),
+                        "defaultBet" => Game::getDefaultBet(),
+                        'playersCookingOrNot' => $playersCookingOrNotNormalized
                     ];
                     
                     $player->getConnection()->send(json_encode($someNotWinnersAgreeToCook));
@@ -280,6 +304,7 @@ class ChatSocket extends BaseSocket
                         "currentCookingId" => Game::getCurrentCookingId(),
                         "stepInBets" => Game::getStepInBets(),
                         "defaultBet" => Game::getDefaultBet(),
+                        'playersCookingOrNot' => $playersCookingOrNotNormalized
                     ];
                     
                     $player->getConnection()->send(json_encode($allWinnersAgreeToCook));
@@ -294,7 +319,16 @@ class ChatSocket extends BaseSocket
                 foreach ($this->clients as $client) {
                     $client->send(json_encode($noneNotWinnersAgreedToCook));
                 }
-            } 
+            } else {
+                $data = [
+                    'waitingForAllSaid' => true,
+                    "cookingPlayers" => Game::getCurrentCooking()->getPlayersNormalized()
+                ];
+
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($data));
+                }
+            }
         }
     }
 

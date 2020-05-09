@@ -10,6 +10,7 @@ import onCook from './gameEventsHandlers/onCook.js';
 import someNotWinnersAgreeToCook from './gameEventsHandlers/onSomeNotWinnersAgreeToCook.js';
 import noneNotWinnersAgreedToCook from './gameEventsHandlers/onNoneNotWinnersAgreedToCook.js';
 import allWinnersAgreeToCook from './gameEventsHandlers/onAllWinnersAgreeToCook.js';
+import waitingForAllSaid from './gameEventsHandlers/onWaitingForAllSaid.js';
 
 const socketUnit = {
     init() {
@@ -49,7 +50,10 @@ const socketUnit = {
     },
 
     bindEvents() {
-        this.connectBtn.bind('click', () => this.openSocket());
+        this.connectBtn.bind('click', () => {
+            this.openSocket();
+            this.startRoundBtn.attr('disabled', true);
+        });
         this.startRoundBtn.bind('click', () => this.send(
             {readyToPlay: true},
             () => {
@@ -119,6 +123,7 @@ const socketUnit = {
             someNotWinnersAgreeToCook,
             noneNotWinnersAgreedToCook,
             allWinnersAgreeToCook,
+            waitingForAllSaid,
             reconnect: () => {
                 onRoundStart(msgObject, this.checkingOtherPlayersConnection),
                 onMakeBet(msgObject)
