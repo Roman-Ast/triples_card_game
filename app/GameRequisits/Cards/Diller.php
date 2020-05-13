@@ -15,14 +15,9 @@ class Diller
         $deck = $deckRaw->getDeck();
         
         shuffle($deck);
-        shuffle($deck);
-        shuffle($deck);
-        shuffle($deck);
-        shuffle($deck);
-        shuffle($deck);
         
         foreach ($players as $player) {
-            if ($player->getName() === 'Римма') {
+            /*if ($player->getName() === 'Римма') {
                 $player->takeCard(new Card(5, "Король", "Червы", 10, '/images/cards/king-hearts.png'));
                 $player->takeCard(new Card(13, "Валет", "Червы", 10, '/images/cards/valet-hearts.png'));
                 $player->takeCard(new Card(18, "Десять", "Буби", 10, '/images/cards/10-bubi.png'));
@@ -35,7 +30,7 @@ class Diller
                 $player->takeCard(new Card(15, "Валет", "Пики", 10, '/images/cards/valet-clubs.png'));
                 $player->takeCard(new Card(11, "Дама", "Червы", 10, '/images/cards/lady-clubs.png'));
                 $player->takeCard(new Card(18, "Десять", "Крести", 10, '/images/cards/10-bubi.png'));
-            } else {
+            } else {*/
                 for ($i = 0; $i < self::NUMBER_OF_CARDS_ON_HAND; $i++) {
                     //$rand = random_int(0, count($deck) - 1);
                     $card = $deck[$i];
@@ -43,7 +38,7 @@ class Diller
                     unset($deck[$i]);
                     $deck = array_slice($deck, 0);
                 }
-            }
+            //}
             
         }
     }

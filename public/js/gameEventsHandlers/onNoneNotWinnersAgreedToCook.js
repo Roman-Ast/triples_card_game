@@ -2,25 +2,19 @@ const noneNotWinnersAgreedToCook = (msgObject) => {
     console.dir(msgObject);
 
     $('.playerBetField').each(function () {
-        if (!msgObject.cookingPlayers.includes($(this).attr('ownerName'))) {
-            $(this).text('пасс');
-        } else {
-            $(this).text('варю');
-        }
-     });
-    $('.playerBetField').each(function () {
-        if (!msgObject.winners.includes($(this).attr('ownerName'))) {
-            $(this).text('пасс');
-            $(this).css({'color': 'red'});
-            $(this).css({'font-style': 'italic'});
-        }
-    });
+        msgObject.playersCookingOrNot.forEach(item => {
+            if (item.name === $(this).attr('ownerName') && item.cooking) {
+                $(this).text('варю');
+            } else if (item.name === $(this).attr('ownerName') && item.cooking === false) {
+                $(this).text('пасс');
+            }
+        });
+    })
+    
     if (msgObject.winners.includes($('#playerName').text())) {
         $('#cooking').show();
         $('#shareCashBoxAfterOpening').show();
-
-        
-    } else {
+    } else if (!msgObject.winners.includes($('#playerName').text())) {
         $('#cooking').hide();
         $('#notCooking').hide();
     }

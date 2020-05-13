@@ -1,4 +1,4 @@
-const onOpenCards = (msgObject) => {
+const onOpenCards = (msgObject, checkingOtherPlayersConnection, playersArrangement) => {
     $('#modalBody').empty();
     $('#modal').hide();
     console.dir(msgObject);
@@ -17,8 +17,13 @@ const onOpenCards = (msgObject) => {
         if (msgObject.winnerAfterOpening.includes($('#playerName').text())) {
             $('#bet').hide();
         } else {
-            $('#cooking').show();
-            $('#notCooking').show();
+            if ($('#playerBalance').text() > $('#cashBoxSum').text() / 2) {
+                $('#cooking').show();
+                $('#notCooking').show();
+            } else {
+                $('#notCooking').show();
+            }
+            
         }
     }
 

@@ -94,7 +94,6 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
         const cardContainer = document.createElement("div");
         const img = new Image(96.4, 144.6);
         img.src = card.face;
-        img.classList.add('cardFace');
         cardContainer.appendChild(img);
 
         cardContainer.classList.add("card");

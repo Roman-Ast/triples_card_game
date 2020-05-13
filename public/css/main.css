@@ -135,6 +135,11 @@
         align-items: center;
         font-size: 12px;
     }
+    .playerNameContainer{
+        background-color: #bbb;
+        border-radius: 5px;
+        padding: 0 5px 0 5px;
+    }
     #playerName{
         display: flex;
         flex-direction: row;
@@ -238,7 +243,6 @@
     }
     .card{
         overflow: hidden;
-        background-color: #126F4B;
     }
     #greeting{
         width: 70%;

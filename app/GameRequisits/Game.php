@@ -71,13 +71,18 @@ class Game
             }
         } else {
             foreach (self::$cookingPlayers as $index => $item) {
+                if (in_array($item['id'], self::$winnersIds)) {
+                    self::$cookingPlayers[$index]['winnerOfLastRound'] = true;
+                } else {
+                    self::$cookingPlayers[$index]['winnerOfLastRound'] = false;
+                }
+            }
+            foreach (self::$cookingPlayers as $index => $item) {
                 if ($item['id'] == $informingPlayer->getId()) {
                     self::$cookingPlayers[$index]['readyForCook'] = $readiness;
                 }
             }
         }
-        var_dump(self::$winnersIds);
-        var_dump(self::$cookingPlayers);
         //если у всех одинаковое кол-во очков и все сказали и все согласны варить
         if (count(self::$players) === count(self::$lastRoundWinner)){
             self::$allPlayersWinners = true;
@@ -181,7 +186,7 @@ class Game
         self::$currentCookingId += 1;
         $cooking = new Cooking(
                 self::$currentCookingId,
-                self::getCookingPlayers(),
+                self::getCookingPlayersNormalizedForCookingClass(),
                 self::$lastRoundCashBox
             );
         self::$currentCooking = $cooking;
@@ -190,7 +195,7 @@ class Game
         $cooking->start();  
     }
 
-    public static function getCookingPlayers()
+    public static function getCookingPlayersNormalizedForCookingClass()
     {
         $cooking = [];
         foreach (self::$cookingPlayers as $item) {
@@ -225,15 +230,16 @@ class Game
 
     public static function setLastRoundWinner(array $winner)
     {
-        self::$cookingPlayers = [];
-        self::$isCooking = false;
-        self::$allwinnersAgreedToCook = false;
-        self::$someNotWinnerAgreedToCook = false;
-        self::$noneNotWinnersAgreedToCook = false;
         self::$lastRoundWinner = $winner;
         self::$winnersIds = [];
+        
         foreach (self::$lastRoundWinner as $player) {
             self::$winnersIds[] = $player->getId();
+        }
+
+        foreach (self::$cookingPlayers as $index => $item) {
+            self::$cookingPlayers[$index]['winnerOfLastRound'] = null;
+            self::$cookingPlayers[$index]['readyForCook'] = null;
         }
     }
 
@@ -257,9 +263,6 @@ class Game
             if ($player->getConnResourceId() === $conn->resourceId) {
                 unset(self::$players[$index]);
             }
-        }
-        foreach (self::$players as $index => $player) {
-            var_dump($player->getId());
         }
         self::$players = array_slice(self::$players);
     }
@@ -297,7 +300,9 @@ class Game
             self::$currentRound = $round;
             self::$rounds[self::$currentRoundId] = $round;
             self::$allPlayersReady = true;
-            
+            self::$isCooking = false;
+            self::$cookingPlayers = [];
+
             $round->start();
         }
     }
@@ -388,17 +393,32 @@ class Game
 
     public static function endRoundWithoutShowingUp()
     {
-        self::$currentRound->endRoundWithoutShowingUp();
+        if (self::$isCooking) {
+            self::$currentCooking->endRoundWithoutShowingUp();
+        } else {
+            self::$currentRound->endRoundWithoutShowingUp();
+        }
+        
     }
 
     public static function endRoundAfterOpeningCards()
     {
-        self::$currentRound->endRoundAfterOpeningCards();
+        if (self::$isCooking) {
+            self::$currentCooking->endRoundAfterOpeningCards();
+        } else {
+            self::$currentRound->endRoundAfterOpeningCards();
+        }
+        
     }
 
     public static function shareCashBoxAfterOpening()
     {
-        self::$currentRound->shareCashBoxAfterOpening();
+        if (self::$isCooking) {
+            self::$currentRound->shareCashBoxAfterOpening();
+        } else {
+            self::$currentCooking->shareCashBoxAfterOpening();
+        }
+        
     }
 
     public static function getBalanceOfAllPlayers()
@@ -423,6 +443,7 @@ class Game
 
     public static function getAllPlayersCards()
     {
+        $normalized = [];
         if (!Game::isCooking()) {
             foreach (self::$players as $player) {
                 if (!in_array($player->getName(), self::getCurrentRound()->getSavingPlayers())) {
@@ -437,13 +458,13 @@ class Game
            
             return $normalized;
         } else {
-            foreach (self::getCookingPlayers() as $player) {
-                if (!in_array($player->getName(), self::getCurrentCooking()->getSavingPlayers())) {
+            foreach (self::$cookingPlayers as $item) {
+                if (!in_array($item['player']->getName(), self::getCurrentCooking()->getSavingPlayers())) {
                     $normalized[] = [
-                        'name' => $player->getName(),
+                        'name' => $item['player']->getName(),
                         'cards' => array_map(function($card) {
                             return $card->getFace();
-                        }, $player->getCardsOnHand())
+                        }, $item['player']->getCardsOnHand())
                     ];
                 }
             }
@@ -454,6 +475,7 @@ class Game
 
     public static function getPlayersPointsAfterOpeningCards()
     {
+        $normalizedPoints = [];
         if (!self::isCooking()) {
             foreach (self::$players as $player) {
                 if (!in_array($player->getName(), self::getCurrentRound()->getSavingPlayers())) {
@@ -465,11 +487,11 @@ class Game
             }
             return $normalizedPoints;
         } else {
-            foreach (self::getCookingPlayers() as $player) {
-                if (!in_array($player->getName(), self::getCurrentCooking()->getSavingPlayers())) {
+            foreach (self::$cookingPlayers as $item) {
+                if (!in_array($item['player']->getName(), self::getCurrentCooking()->getSavingPlayers())) {
                     $normalizedPoints[] = [
-                        'name' => $player->getName(),
-                        'points' => $player->getCardsValueAfterOpening()
+                        'name' => $item['player']->getName(),
+                        'points' => $item['player']->getCardsValueAfterOpening()
                     ];
                 }
             }
@@ -489,7 +511,9 @@ class Game
         $tax->sum = $taxSum;
 
         $tax->save();*/
-
+        self::$isCooking = false;
+        self::$allwinnersAgreedToCook = false;
+        self::$someNotWinnerAgreedToCook = false;
         self::$connectAbility = true;
         self::$allPlayersReady = false;
 

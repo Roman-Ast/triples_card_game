@@ -4,6 +4,7 @@ namespace App\GameRequisits;
 
 use App\GameRequisits\Cards\Diller;
 use App\GameRequisits\Users\Player;
+use App\User;
 
 class Cooking
 {
@@ -26,7 +27,7 @@ class Cooking
     private $lastBet = 0;
     private $winner;
     private $isFirstRoundOfSales = true;
-    private $winnerAfterOpeningCards;
+    public $winnerAfterOpeningCards;
     private $lastRoundCashBox;
 
     public function __construct(int $id, array $players, int $sum)
@@ -34,7 +35,6 @@ class Cooking
         $this->id = $id;
         $this->players = $players;
         $this->lastRoundCashBox += $sum;
-        var_dump($this->lastRoundCashBox);
     }
 
     public function start()
@@ -81,7 +81,7 @@ class Cooking
     public function setFirstWordPlayer()
     {
         foreach ($this->players as $index => $player) {
-            if ($player == $this->distributor) {
+            if ($player->getId() === $this->distributor->getId()) {
                 $currentDistributorIndex = $index;
             }
         }
@@ -492,10 +492,11 @@ class Cooking
     
     public function setWinnerAfterOpeningCards()
     {
+        $players = $this->players;
+        
         $maxValue = \collect(Game::getPlayersPointsAfterOpeningCards())->max('points');
 
-        $playersWithMaxPoints = [];
-        foreach ($this->players as $player) {
+        foreach ($players as $player) {
             if (
                 $player->getCardsValueAfterOpening() == $maxValue 
                 && !in_array($player->getName(), $this->getSavingPlayers())
@@ -503,7 +504,6 @@ class Cooking
                 $playersWithMaxPoints[] = $player;
             }
         }
-        
         Game::setLastRoundWinner($playersWithMaxPoints);
         $this->winnerAfterOpeningCards = $playersWithMaxPoints;
     }
@@ -519,5 +519,106 @@ class Cooking
 
             return $playersWinners;
         }
+    }
+
+    public function endRoundAfterOpeningCards()
+    {
+        $players = $this->players;
+
+        $this->winner = Game::getLastRoundWinner()[0];
+            
+        //снимаем налог
+        //$this->substractTax();
+
+        foreach ($players as $player) {
+            if ($player->getId() == $this->winner->getId()) {
+                $userFromDb = User::find($this->winner->getId());
+                $userFromDb->balance = 
+                    $this->winner->getBalance() + Game::getLastRoundCashBox();
+                $userFromDb->save();
+            } else {
+                $userFromDb = User::find($player->getId());
+                $userFromDb->balance = $player->getBalance();
+                $userFromDb->save();
+            }
+        }
+
+        Game::setLastRoundWinner([$this->winner]);
+        Game::endCurrentRound();
+    }
+
+    public function shareCashBoxAfterOpening()
+    {
+        $players = $this->players; 
+        $arrOfIdsOfWInners = [];
+
+        foreach ($this->winnerAfterOpeningCards as $player) {
+            $arrOfIdsOfWInners[] = $player->getId();
+        }
+
+        //снимаем налог
+        //$this->substractTax();
+        
+        foreach ($players as $player) {
+            if (in_array($player->getId(), $arrOfIdsOfWInners)) {
+                $userFromDb = User::find($player->getId());
+                $userFromDb->balance =
+                    $player->getBalance() + round(Game::getLastRoundCashBox() / count($arrOfIdsOfWInners));
+                $userFromDb->save();
+            } else {
+                $userFromDb = User::find($player->getId());
+                $userFromDb->balance = $player->getBalance();
+                $userFromDb->save();
+            }
+        }
+        $winners = [];
+
+        foreach (Game::getAllPlayers() as $player) {
+            if (in_array($player->getId(), $arrOfIdsOfWInners)) {
+                $winners[] = $player;
+            }
+        }
+        Game::setLastRoundWinner($winners);
+        Game::endCurrentRound();
+    }
+
+    public function endRoundWithoutShowingUp()
+    {
+        $players = $this->players;
+
+        foreach ($players as $player) {
+            if ($player->getId() == $this->playerTakingConWithoutShowingUp) {
+                $this->winner = $player;
+            }
+        }
+        //снимаем налог
+        //$this->substractTax();
+
+        foreach ($players as $player) {
+            if ($player->getId() == $this->winner->getId()) {
+                $userFromDb = User::find($this->winner->getId());
+                $userFromDb->balance = $this->winner->getBalance() + $this->cashBox + $this->sumOfDefaultBets;
+                $userFromDb->save();
+            } else {
+                $userFromDb = User::find($player->getId());
+                $userFromDb->balance = $player->getBalance();
+                $userFromDb->save();
+            }
+        }
+
+        $this->endRoundWithoutShowingUp = true;
+        foreach (Game::getAllPlayers() as $player) {
+            if ($player->getId() === $this->playerTakingConWithoutShowingUp) {
+                Game::setLastRoundWinner([$player]);
+            }
+        }
+
+        Game::setLastRoundWinner([$this->winner]);
+        Game::endCurrentRound();
+    }
+
+    public function isRoundEndWithoutShowingUp()
+    {
+        return  $this->endRoundWithoutShowingUp;
     }
 }

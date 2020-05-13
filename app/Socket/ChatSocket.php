@@ -47,6 +47,7 @@ class ChatSocket extends BaseSocket
             }else if (isset($player_data['readyToPlay']) && $player_data['readyToPlay']) {
                 foreach (Game::getAllPlayers() as $player) {
                     if ($player->getConnection() == $player_sender) {
+                        $player->setBalance();
                         $player->readyToPlay();
                     }
                 }
@@ -195,42 +196,79 @@ class ChatSocket extends BaseSocket
 
         } else if (isset($player_data['endRoundWithoutShowingUp']) && $player_data['endRoundWithoutShowingUp']) {
             
-            Game::endRoundWithoutShowingUp();
+            if (Game::isCooking()) {
+                Game::endRoundWithoutShowingUp();
 
-            $dataAfterEndingRoundWithoutShowingUp = [
-                "nextRound" => true,
-                "winner" => Game::getCurrentRound()->getWinner()->getName()
-            ];
-            
-            foreach ($this->clients as $client) {
-                $client->send(json_encode($dataAfterEndingRoundWithoutShowingUp));
+                $dataAfterEndingRoundWithoutShowingUp = [
+                    "nextRound" => true,
+                    "winner" => Game::getCurrentCooking()->getWinner()->getName()
+                ];
+                
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAfterEndingRoundWithoutShowingUp));
+                }
+            } else {
+                Game::endRoundWithoutShowingUp();
+
+                $dataAfterEndingRoundWithoutShowingUp = [
+                    "nextRound" => true,
+                    "winner" => Game::getCurrentRound()->getWinner()->getName()
+                ];
+                
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAfterEndingRoundWithoutShowingUp));
+                }
             }
         } else if (isset($player_data['endRoundAfterOpeningCards']) && $player_data['endRoundAfterOpeningCards']) {
-            
-            Game::endRoundAfterOpeningCards();
+            if (Game::isCooking()) {
+                Game::endRoundAfterOpeningCards();
 
-            $dataAfterEndingRoundAfterOpeningCards = [
-                "nextRound" => true,
-                "winner" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
-            ];
-            
-            foreach ($this->clients as $client) {
-                $client->send(json_encode($dataAfterEndingRoundAfterOpeningCards));
+                $dataAfterEndingRoundAfterOpeningCards = [
+                    "nextRound" => true,
+                    "winner" => Game::getCurrentCooking()->getWinnerAfterOpeningCards()
+                ];
+                
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAfterEndingRoundAfterOpeningCards));
+                }
+            } else {
+                Game::endRoundAfterOpeningCards();
+
+                $dataAfterEndingRoundAfterOpeningCards = [
+                    "nextRound" => true,
+                    "winner" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
+                ];
+                
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAfterEndingRoundAfterOpeningCards));
+                }
             }
+            
         } else if (isset($player_data['shareCashBoxAfterOpening']) && $player_data['shareCashBoxAfterOpening']) {
             
-            Game::shareCashBoxAfterOpening();
+            if (Game::isCooking()) {
+                Game::shareCashBoxAfterOpening();
 
-            $dataAfterEndingRoundAfterOpeningCards = [
-                "nextRound" => true,
-                "winner" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
-            ];
-                
-            foreach ($this->clients as $client) {
-                $client->send(json_encode($dataAfterEndingRoundAfterOpeningCards));
+                $dataAfterEndingRoundAfterOpeningCards = [
+                    "nextRound" => true,
+                    "winner" => Game::getCurrentCooking()->getWinnerAfterOpeningCards()
+                ];
+                    
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAfterEndingRoundAfterOpeningCards));
+                }
+            } else {
+                Game::shareCashBoxAfterOpening();
+
+                $dataAfterEndingRoundAfterOpeningCards = [
+                    "nextRound" => true,
+                    "winner" => Game::getCurrentRound()->getWinnerAfterOpeningCards()
+                ];
+                    
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAfterEndingRoundAfterOpeningCards));
+                }
             }
-
-            $countOfClickingPlayers = [];
             
         } elseif (isset($player_data['aboutCooking']) && $player_data['aboutCooking']) {
             
@@ -313,7 +351,8 @@ class ChatSocket extends BaseSocket
 
                 $noneNotWinnersAgreedToCook = [
                     'noneNotWinnersAgreedToCook' => true,
-                    'winners' => Game::getCurrentRound()->getWinnerAfterOpeningCards()
+                    'winners' => Game::getCurrentRound()->getWinnerAfterOpeningCards(),
+                    'playersCookingOrNot' => $playersCookingOrNotNormalized
                 ];
 
                 foreach ($this->clients as $client) {
@@ -322,7 +361,7 @@ class ChatSocket extends BaseSocket
             } else {
                 $data = [
                     'waitingForAllSaid' => true,
-                    "cookingPlayers" => Game::getCurrentCooking()->getPlayersNormalized()
+                    'playersCookingOrNot' => $playersCookingOrNotNormalized
                 ];
 
                 foreach ($this->clients as $client) {

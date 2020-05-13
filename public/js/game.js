@@ -28,6 +28,7 @@ const socketUnit = {
         this.playersArrangement = playersArrangement;
         this.mainFrame = $('#mainFrame');
         this.frameForAllPlayersCardsClose = $('#frameForAllPlayersCardsClose');
+        this.timeOutToBet = null;
 
         this.initCss();
         this.bindEvents();
@@ -64,48 +65,60 @@ const socketUnit = {
             }, 
             )
         );
-        this.makeBetBtn.bind('click', () => this.send({
+        this.makeBetBtn.bind('click', () => {
+            this.send({
                 makingBet: true,
                 betMaker: $("#playerName").text(),
                 betSum: $("#betSum").val()
-        }));
-        this.saveBtn.bind('click', () => this.send({
-            makingBet: true,
-            betMaker: $("#playerName").text(),
-            betSum: 0
-        }));
-        this.collateBtn.bind('click', () => this.send({
-            makingBet: true,
-            betMaker: $("#playerName").text(),
-            betSum: parseInt($('#collateSum').text())
-        }));
-        this.openCardsBtn.bind('click', () => this.send({
-            checkUserCardsValue: true
-        }));
-        this.takeCashBoxBtn.bind('click', () => this.send({
-            endRoundWithoutShowingUp: true
-        }));
-        this.takeCashBoxAfterOpeningBtn.bind('click', () => this.send({
-            endRoundAfterOpeningCards: true
-        }));
-        this.shareCashBoxAfterOpeningBtn.bind('click', () => this.send({
-            shareCashBoxAfterOpening: true
-        }));
-        this.cookingBtn.bind('click', () => this.send({
-            aboutCooking: true,
-            cooking: true
-        }));
-        this.notCookingBtn.bind('click', () => this.send({
-            aboutCooking: true,
-            cooking: false
-        }));
-
-        
-        
+            });
+        });
+        this.saveBtn.bind('click', () => {
+            this.send({
+                makingBet: true,
+                betMaker: $("#playerName").text(),
+                betSum: 0
+            });
+        });
+        this.collateBtn.bind('click', () => {
+            this.send({
+                makingBet: true,
+                betMaker: $("#playerName").text(),
+                betSum: parseInt($('#collateSum').text())
+            });
+        });
+        this.openCardsBtn.bind('click', () => {
+            this.send({checkUserCardsValue: true});
+        });
+        this.takeCashBoxBtn.bind('click', () => {
+            this.send({endRoundWithoutShowingUp: true});
+            $('#playerBalance').text(+$('#cashBoxSum').text() + +$('#playerBalance').text());
+        });
+        this.takeCashBoxAfterOpeningBtn.bind('click', () => {
+            this.send({endRoundAfterOpeningCards: true});
+            $('#playerBalance').text(+$('#cashBoxSum').text() + +$('#playerBalance').text());
+        });
+        this.shareCashBoxAfterOpeningBtn.bind('click', (msgObject) => {
+            this.send({shareCashBoxAfterOpening: true});
+            if (msgObject.winnerAfterOpening.includes($('#playerName').text())) {
+                const share = Math.round($('#cashBoxSum').text() / msgObject.winnerAfterOpening.length);
+                $('#playerBalance').text(+$('#playerBalance').text() + share);
+            }
+        });
+        this.cookingBtn.bind('click', () => {
+            this.send({
+                aboutCooking: true,
+                cooking: true
+            });
+        });
+        this.notCookingBtn.bind('click', () => {
+            this.send({
+                aboutCooking: true,
+                cooking: false
+            });
+        });
     },
 
     send(objToSend, f = ()=>{}) {
-        
         f(objToSend);
         this.ws.send(JSON.stringify(objToSend));
     },

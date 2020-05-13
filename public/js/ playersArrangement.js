@@ -18,6 +18,7 @@ const createPlayerContainer = (elementName, currentPlayerName, currentDistributo
     const imgContainer = document.createElement("div");
     imgContainer.classList.add('imgContainer');
     const playerNameContainer = document.createElement("div");
+    playerNameContainer.classList.add('playerNameContainer');
     const playerDataContainer = document.createElement("div");
     const img = new Image(36, 28);
     img.src = '/images/table/Shirts.png';
@@ -27,7 +28,6 @@ const createPlayerContainer = (elementName, currentPlayerName, currentDistributo
     $(playerContainer).attr('ownerName', elementName);
     if (elementName === currentPlayerName) {
         playerNameContainer.append("Вы");
-        playerNameContainer.style.color = 'red';
     }
     else playerNameContainer.append(elementName);
     playerContainer.appendChild(playerNameContainer);
@@ -58,8 +58,8 @@ const createPlayerContainer = (elementName, currentPlayerName, currentDistributo
         firstWordFlag.classList.add('firstWordFlag');
 
         $(firstWordFlag)
-            .css({'border': '12px solid transparent'})
-            .css({'border-bottom': '12px solid red'})
+            .css({'border': '10px solid transparent'})
+            .css({'border-bottom': '10px solid #FFC107'})
         playerDataContainer.appendChild(firstWordFlag);
     }
 

@@ -514,7 +514,7 @@ class Round
 
     public function getCurrentStepPlayer()
     {
-        return $this->currentStepPlayer;
+        return $this->currentStepPlayer ?? $this->first_word_right;
     }
 
     public function getNextStepPlayer()
@@ -589,19 +589,17 @@ class Round
             }
         }
         //снимаем налог
-        $this->substractTax();
+        //$this->substractTax();
 
         foreach ($players as $player) {
             if ($player->getId() == $this->winner->getId()) {
-                $userFromDb = User::where('id', $this->winner->getId())->first();
-                $userFromDb->balance = $this->winner->getBalance() + $this->cashBox +$this->sumOfDefaultBets;
+                $userFromDb = User::find($this->winner->getId());
+                $userFromDb->balance = $this->winner->getBalance() + $this->cashBox + $this->sumOfDefaultBets;
                 $userFromDb->save();
-                $player->setBalance();
             } else {
-                $userFromDb = User::where('id', $player->getId())->first();
+                $userFromDb = User::find($player->getId());
                 $userFromDb->balance = $player->getBalance();
                 $userFromDb->save();
-                $player->setBalance();
             }
         }
 
@@ -616,9 +614,7 @@ class Round
 
     public function shareCashBoxAfterOpening()
     {
-       
         $players = Game::getAllPLayers(); 
-
         $arrOfIdsOfWInners = [];
 
         foreach ($this->winnerAfterOpeningCards as $player) {
@@ -626,20 +622,18 @@ class Round
         }
 
         //снимаем налог
-        $this->substractTax();
+        //$this->substractTax();
         
         foreach ($players as $player) {
             if (in_array($player->getId(), $arrOfIdsOfWInners)) {
-                $userFromDb = User::where('id', $player->getId())->first();
+                $userFromDb = User::find($player->getId());
                 $userFromDb->balance =
-                    $player->getBalance() + round(($this->cashBox + $this->sumOfDefaultBets)/ count($arrOfIdsOfWInners));
+                    $player->getBalance() + round(Game::getLastRoundCashBox() / count($arrOfIdsOfWInners));
                 $userFromDb->save();
-                $player->setBalance();
             } else {
-                $userFromDb = User::where('id', $player->getId())->first();
+                $userFromDb = User::find($player->getId());
                 $userFromDb->balance = $player->getBalance();
                 $userFromDb->save();
-                $player->setBalance();
             }
         }
         $winners = [];
@@ -657,27 +651,21 @@ class Round
     {
         $players = Game::getAllPlayers();
 
-        foreach ($players as $player) {
-            if ($player->getConnResourceId() == $this->winnerAfterOpeningCards[0]->getConnResourceId()) {
-                $this->winner = $player;
-            }
-        }
+        $this->winner = Game::getLastRoundWinner()[0];
             
         //снимаем налог
-        $this->substractTax();
+        //$this->substractTax();
 
         foreach ($players as $player) {
             if ($player->getId() == $this->winner->getId()) {
-                $userFromDb = User::where('id', $this->winner->getId())->first();
+                $userFromDb = User::find($this->winner->getId());
                 $userFromDb->balance = 
-                    $this->winner->getBalance() + $this->cashBox + $this->sumOfDefaultBets;
+                    $this->winner->getBalance() + Game::getLastRoundCashBox();
                 $userFromDb->save();
-                $player->setBalance();
             } else {
-                $userFromDb = User::where('id', $player->getId())->first();
+                $userFromDb = User::find($player->getId());
                 $userFromDb->balance = $player->getBalance();
                 $userFromDb->save();
-                $player->setBalance();
             }
         }
 

@@ -1,4 +1,4 @@
-const onMakeBet = (msgObject) => {
+const onMakeBet = (msgObject, checkingOtherPlayersConnection, playersArrangement) => {
     $(`#betSum`).empty();
     //удаляем из селекта суммы ненужные options, так как меньше уже поставить нельзя
     if (!msgObject.toCollate) {
@@ -84,8 +84,8 @@ const onMakeBet = (msgObject) => {
         firstWordFlag.classList.add('firstWordFlag');
                     
         $(firstWordFlag)
-            .css({'border': '15px solid transparent'})
-            .css({'border-bottom': '15px solid red'});
+            .css({'border': '10px solid transparent'})
+            .css({'border-bottom': '10px solid #FFC107'});
         $('.playerContainer').each(function() {
             if ($(this).attr('ownerName') === msgObject.nextStepPlayer) {
                 $(this).append(firstWordFlag);
@@ -133,7 +133,9 @@ const onMakeBet = (msgObject) => {
             $('#makeBet').attr('disabled', true);
             $("#playerBalance").css({'color': 'red'});
         }
-    }        
+    }
+    
+    
 };
 
 export default onMakeBet;
