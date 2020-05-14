@@ -97,10 +97,10 @@ const socketUnit = {
             this.send({endRoundAfterOpeningCards: true});
             $('#playerBalance').text(+$('#cashBoxSum').text() + +$('#playerBalance').text());
         });
-        this.shareCashBoxAfterOpeningBtn.bind('click', (msgObject) => {
+        this.shareCashBoxAfterOpeningBtn.bind('click', () => {
             this.send({shareCashBoxAfterOpening: true});
-            if (msgObject.winnerAfterOpening.includes($('#playerName').text())) {
-                const share = Math.round($('#cashBoxSum').text() / msgObject.winnerAfterOpening.length);
+            if (this.msgObject.winnerAfterOpening.includes($('#playerName').text())) {
+                const share = Math.round($('#cashBoxSum').text() / this.msgObject.winnerAfterOpening.length);
                 $('#playerBalance').text(+$('#playerBalance').text() + share);
             }
         });
@@ -124,6 +124,7 @@ const socketUnit = {
     },
 
     onMessage (msgObject) {
+        this.msgObject = msgObject;
         const composer = {
             checkConnection: onCheckConnection,
             connection_error: onConnectionError,

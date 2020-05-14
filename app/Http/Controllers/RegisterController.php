@@ -16,18 +16,16 @@ class RegisterController extends Controller
     {
         $request->validate([
             'name' => 'required|min:3|unique:App\User,name',
-            'email' => 'required|email:rfc,dns|unique:App\User,email',
-            'password' => 'required|min:7',
-            'password_confirmation' => 'same:password'
+            'email' => 'required|email:rfc,dns|unique:App\User,email'
         ]);
 
         $user = new User([
             "name" => $request->name,
-            "email" => $request->email,
-            "password" => $request->password
+            "email" => $request->email
         ]);
+
         $user->save();
 
-        return view("/game", ['user' => $user]);
+        return redirect()->route('login');
     }
 }
