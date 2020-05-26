@@ -26,6 +26,7 @@ const socketUnit = {
         this.shareCashBoxAfterOpeningBtn = $('#shareCashBoxAfterOpening');
         this.cookingBtn = $('#cooking');
         this.notCookingBtn = $('#notCooking');
+        this.runServerBtn = $('#runServer');
         this.playersArrangement = playersArrangement;
         this.mainFrame = $('#mainFrame');
         this.frameForAllPlayersCardsClose = $('#frameForAllPlayersCardsClose');

@@ -46,23 +46,28 @@
                 <div class="options">
                     <ul class="nav nav-tabs" id="myTab" role="tablist">
                         <li class="nav-item">
-                            <a class="btn nav-item-inactive" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true" style="color:yellow;">
+                            <a class="btn nav-item-inactive" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true" style="color:yellow;border:1px solid #fff;margin:2px 0 2px 2px;">
                                 Баланс
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn nav-item-inactive" id="contact-tab" data-toggle="tab" href="#generatePassword" role="tab" aria-controls="contact" aria-selected="false" style="color:#fff;">
+                            <a class="btn nav-item-inactive" id="contact-tab" data-toggle="tab" href="#generatePassword" role="tab" aria-controls="contact" aria-selected="false" style="color:#fff;border:1px solid #fff;margin:2px 0 2px 2px;">
                                 Пароль
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn nav-item-inactive" id="reviews-tab"data-toggle="tab"href="#reviews"role="tab"aria-controls="reviews"aria-selected="false" style="color:#fff;">
+                            <a class="btn nav-item-inactive" id="reviews-tab"data-toggle="tab"href="#reviews"role="tab"aria-controls="reviews"aria-selected="false" style="color:#fff;border:1px solid #fff;margin:2px 0 2px 2px;">
                                 Сервер
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn nav-item-inactive" id="stepFor-tab" data-toggle="tab" href="#stepFor"role="tab"aria-controls="reviews"aria-selected="false" style="color:#fff;">
+                            <a class="btn nav-item-inactive" id="stepFor-tab" data-toggle="tab" href="#stepFor"role="tab"aria-controls="reviews"aria-selected="false" style="color:#fff;border:1px solid #fff;margin:2px 0 2px 2px;">
                                 Сходить за ...
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn nav-item-inactive" id="moneyOutput-tab" data-toggle="tab" href="#moneyOutput"role="tab"aria-controls="reviews"aria-selected="false" style="color:#fff;border:1px solid #fff;margin:2px 0 2px 2px;">
+                                Вывод фантиков
                             </a>
                         </li>
                     </ul>
@@ -107,7 +112,22 @@
                                 </tr>
                                 @endforeach
                             </table>
-                        </div> 
+                        </div>
+                        <div class="tab-pane fade" id="moneyOutput" role="tabpanel" aria-labelledby="home-tab">
+                            <table>
+                                @foreach ($allUsers as $user)
+                                <tr>
+                                    <td class="playerName">{{ $user->name }}</td>
+                                    <td class="playerBalance">{{ $user->balance }}</td>
+                                    <td>
+                                        <input type="text" class="newBalance" ownerName="{{ $user->name }}">
+                                        <button class="chargeNewBalance" class="btn btn-sm btn-success">начислить</button>
+                                        <input type="hidden" value="{{ $user->id }}" class="userId">
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -154,34 +174,6 @@
                     });
                 });
                 
-                /*$('.chargeNewBalance').on('click', function(e) {
-                    e.preventDefault();
-                    
-                    const data = {
-                        name: $(this).prev().attr('ownerName'),
-                        newBalance: $(this).prev().val(),
-                        id: $(this).next().val()
-                    };
-                    $(this).prev().val('');
-                    $.ajax({
-                        data: data,
-                        url: "{{ route('chargeBalance') }}",
-                        type: "POST",
-                        dataType: 'json',
-                        success: function (data) {
-                            console.log(data);
-                            $('.playerName').each(function () {
-                               if ($(this).text() === data.playerName) {
-                                   $(this).next().text(data.newBalance);
-                               } 
-                            });
-                        },
-                        error: function (error) {
-                            console.log(error);
-                        }
-                    });
-                });
-
                 $('#runServer').on('click', function () {
                     $.ajax({
                         data: {},
@@ -196,7 +188,7 @@
                         }
                     });
                 });
-
+                
                 $('#stopServer').on('click', function () {
                     $.ajax({
                         data: {},
@@ -210,7 +202,7 @@
                             console.log(error);
                         }
                     });
-                });*/
+                });
             });
         </script>
     </body>

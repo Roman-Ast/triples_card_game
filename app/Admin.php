@@ -10,26 +10,33 @@ use App\Socket\ChatSocket;
 
 class Admin
 {
-    private $server;
+    private static $process;
 
-    public function runServer()
+    public static function runServer()
     {
-        $port = 8050;
-
-        $this->server = IoServer::factory(
-            new HttpServer(
-                new WsServer(
-                    new ChatSocket()
-                )
-            ),
-            $port
-        );
-
-        $this->server->run();
+        $descriptorspec = array(
+            0 => array("pipe", "r"),  // stdin - канал, из которого дочерний процесс будет читать
+            1 => array("pipe", "w"),  // stdout - канал, в который дочерний процесс будет записывать 
+            2 => array("file", "/tmp/error-output.txt", "a") // stderr - файл для записи
+         );
+         
+        self::$process = proc_open('cd .. && php artisan chat_server:serve', $descriptorspec, $pipes);
+        
+        if (self::$process) {
+            return 'server is started...';
+        } else {
+            return 'error';
+        }
     }
 
-    public function stopServer()
+    public static function stopServer()
     {
-        $this->server->close();
+        $responseCode = proc_close(self::$process);
+
+        if ($responseCode !== -1) {
+            return 'server is stoped...';
+        } else {
+            return 'error';
+        }
     }
 }

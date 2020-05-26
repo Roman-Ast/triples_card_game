@@ -9,6 +9,8 @@ use App\Admin;
 
 class GameController extends Controller
 {
+    private $process;
+
     public function index($id)
     {
         /*if (!Session::has('message')) {
@@ -33,17 +35,29 @@ class GameController extends Controller
 
     public function runServer()
     {
-        $admin = new Admin();
-        $this->admin = $admin;
-        $state = $this->admin->runServer();
-
-        return $state;
+        $outputArr = [];
+        $output = exec('cd .. && php artisan chat_server:serve', $outputArr, $ret_var);
+        
+        return json_encode(['output' => $outputArr, 'status' => $ret_var]);
     }
 
     public function stopServer()
     {
-        $state = $this->admin->stopServer();
+        $outputArr = [];
+        exec('lsof -i -P -n | grep :8050', $outputArr, $ret_var);
+        
+        $arr = explode(' ', $outputArr[0]);
+        $trimedArr = array_filter($arr, function($item) {
+            if ($item !== '') {
+                return $item;
+            }
+        });
+        $slicedArr = array_slice($trimedArr, 0);
+        $processPID = $slicedArr[1];
 
-        return $state;
+        $killedOutputArr = [];
+
+        exec('kill -9 ' . $processPID, $killedOutputArr, $killed_ret_var);
+        return json_encode(['outputGrep' => $outputArr,'outputKilled' => $killedOutputArr, 'status' => $killed_ret_var]);
     }
 }
