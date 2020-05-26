@@ -37,4 +37,22 @@ class RoundStart
         
         return $dataForRoundStarting;
     }
+
+    public static function infoForAdmin()
+    {
+        $dataForRoundStarting = [
+            "dataForRoundStarting" => true,
+            'cards' => [],
+            "allPlayers" => Game::getAllPlayersNormalizedForGame(),
+            "allPlayersIds" => Game::getAllPlayersIdsNormalizedForGame(),
+            "defaultBets" => Game::getCurrentRound()->getRoundDefaultBets(),
+            "currentDistributor" => Game::getCurrentDistributor()->getName(),
+            "currentFirstWordPlayer" => Game::getCurrentFirstWordPlayer()->getName(),
+            "currentRoundId" => Game::getCurrentRoundId(),
+            "defaultBet" => Game::getDefaultBet(),
+            "stepInBets" => Game::getStepInBets()
+        ];
+        
+        return $dataForRoundStarting;
+    }
 }

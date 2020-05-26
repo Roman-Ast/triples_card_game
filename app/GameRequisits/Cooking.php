@@ -45,6 +45,11 @@ class Cooking
         $this->setInitRoundParameters();
     }
 
+    public function getId()
+    {
+        return $this->id;
+    }
+
     private function setInitRoundParameters()
     {
         foreach ($this->players as $index => $player) {
@@ -495,7 +500,7 @@ class Cooking
         $players = $this->players;
         
         $maxValue = \collect(Game::getPlayersPointsAfterOpeningCards())->max('points');
-
+        $playersWithMaxPoints = [];
         foreach ($players as $player) {
             if (
                 $player->getCardsValueAfterOpening() == $maxValue 
@@ -526,9 +531,6 @@ class Cooking
         $players = $this->players;
 
         $this->winner = Game::getLastRoundWinner()[0];
-            
-        //снимаем налог
-        //$this->substractTax();
 
         foreach ($players as $player) {
             if ($player->getId() == $this->winner->getId()) {
@@ -591,13 +593,11 @@ class Cooking
                 $this->winner = $player;
             }
         }
-        //снимаем налог
-        //$this->substractTax();
 
         foreach ($players as $player) {
             if ($player->getId() == $this->winner->getId()) {
                 $userFromDb = User::find($this->winner->getId());
-                $userFromDb->balance = $this->winner->getBalance() + $this->cashBox + $this->sumOfDefaultBets;
+                $userFromDb->balance = $this->winner->getBalance() + Game::getLastRoundCashBox();
                 $userFromDb->save();
             } else {
                 $userFromDb = User::find($player->getId());
@@ -613,7 +613,6 @@ class Cooking
             }
         }
 
-        Game::setLastRoundWinner([$this->winner]);
         Game::endCurrentRound();
     }
 

@@ -2,6 +2,7 @@ import playersArrangement from '../ playersArrangement.js';
 
 const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
     clearInterval(checkingOtherPlayersConnection);
+    $('#innerFrame').empty();
     $('#betSum').empty();
     //убираем спиннер ожидания
     $('#waitingForStart').hide();
@@ -71,7 +72,8 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
         $("#betSum").prop("disabled", true);
     }
     //заполняем поле "баланс" текущего игрока
-    document.querySelector("#playerBalance").innerHTML = balance;
+    const playerBalanceField = $('#playerBalance');
+    if (playerBalanceField) $('#playerBalance').text(balance);
 
     //заполняем комнату игроками
     playersArrangement(
@@ -99,7 +101,10 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
         cardContainer.classList.add("card");
         const cardsContainer = document.querySelector("#myCards");
         
-        cardsContainer.appendChild(cardContainer);
+        if (cardsContainer) {
+            cardsContainer.appendChild(cardContainer);
+        }
+        
     });
             
 }

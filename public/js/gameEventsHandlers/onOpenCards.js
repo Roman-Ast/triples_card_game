@@ -1,4 +1,5 @@
 const onOpenCards = (msgObject, checkingOtherPlayersConnection, playersArrangement) => {
+    $('#cashBoxSum').text(msgObject.totalCashBox);
     $('#modalBody').empty();
     $('#modal').hide();
     console.dir(msgObject);

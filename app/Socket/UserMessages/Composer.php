@@ -24,4 +24,9 @@ class Composer
     {
         return Reconnect::check($player_data, $player_sender);
     }
+
+    public static function infoForAdmin()
+    {
+        return RoundStart::infoForAdmin();
+    }
 }

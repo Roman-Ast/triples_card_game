@@ -10,6 +10,10 @@ class CheckConnection
     public static function check(array $player_data, ConnectionInterface $player_sender)
     {
         foreach (Game::getAllPlayers() as $player) {
+            if ($player_data['isAdmin']) {
+                Game::setAdminConnection($player_sender);
+                Game::deleteAdminFromGame($player_data['id']);
+            }
             if ($player->getConnection() == $player_sender) {
                 $player->setId((int)$player_data["id"]);
                 $player->setName($player_data["name"]);
@@ -23,7 +27,8 @@ class CheckConnection
 
         $checkConnectionData = [
             'checkConnection' => true,
-            'connectedPlayers' => $connectedPlayers
+            'connectedPlayers' => $connectedPlayers,
+            'adminConnection' => Game::getAdminConnection()
         ];
 
         return $checkConnectionData;

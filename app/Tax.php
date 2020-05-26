@@ -8,5 +8,5 @@ use Illuminate\Notifications\Notifiable;
 
 class Tax extends Authenticatable
 {
-    protected $table = 'tax';
+    protected $table = 'taxes';
 }

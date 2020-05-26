@@ -26,16 +26,10 @@ class Admin
         );
 
         $this->server->run();
-
-        if ($this->server) {
-            return ['server_is_run' => true];
-        }
     }
 
     public function stopServer()
     {
         $this->server->close();
-
-        return ['server_is_stopped' => true];
     }
 }

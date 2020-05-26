@@ -11,6 +11,7 @@ import someNotWinnersAgreeToCook from './gameEventsHandlers/onSomeNotWinnersAgre
 import noneNotWinnersAgreedToCook from './gameEventsHandlers/onNoneNotWinnersAgreedToCook.js';
 import allWinnersAgreeToCook from './gameEventsHandlers/onAllWinnersAgreeToCook.js';
 import waitingForAllSaid from './gameEventsHandlers/onWaitingForAllSaid.js';
+import chargeNewBalance from './gameEventsHandlers/onChargeNewBalance.js';
 
 const socketUnit = {
     init() {
@@ -68,6 +69,7 @@ const socketUnit = {
         this.makeBetBtn.bind('click', () => {
             this.send({
                 makingBet: true,
+                betMakerId: parseInt($('#playerId').text()),
                 betMaker: $("#playerName").text(),
                 betSum: $("#betSum").val()
             });
@@ -75,6 +77,7 @@ const socketUnit = {
         this.saveBtn.bind('click', () => {
             this.send({
                 makingBet: true,
+                betMakerId: parseInt($('#playerId').text()),
                 betMaker: $("#playerName").text(),
                 betSum: 0
             });
@@ -82,6 +85,7 @@ const socketUnit = {
         this.collateBtn.bind('click', () => {
             this.send({
                 makingBet: true,
+                betMakerId: parseInt($('#playerId').text()),
                 betMaker: $("#playerName").text(),
                 betSum: parseInt($('#collateSum').text())
             });
@@ -99,8 +103,8 @@ const socketUnit = {
         });
         this.shareCashBoxAfterOpeningBtn.bind('click', () => {
             this.send({shareCashBoxAfterOpening: true});
-            if (this.msgObject.winnerAfterOpening.includes($('#playerName').text())) {
-                const share = Math.round($('#cashBoxSum').text() / this.msgObject.winnerAfterOpening.length);
+            if (this.msgObject.winners.includes($('#playerName').text())) {
+                const share = Math.round($('#cashBoxSum').text() / this.msgObject.winners.length);
                 $('#playerBalance').text(+$('#playerBalance').text() + share);
             }
         });
@@ -109,6 +113,7 @@ const socketUnit = {
                 aboutCooking: true,
                 cooking: true
             });
+            $('#playerBalance').text($('#playerBalance').text() - $('#cashBoxSum').text() / 2);
         });
         this.notCookingBtn.bind('click', () => {
             this.send({
@@ -138,6 +143,7 @@ const socketUnit = {
             noneNotWinnersAgreedToCook,
             allWinnersAgreeToCook,
             waitingForAllSaid,
+            chargeNewBalance,
             reconnect: () => {
                 onRoundStart(msgObject, this.checkingOtherPlayersConnection),
                 onMakeBet(msgObject)
@@ -159,7 +165,7 @@ const socketUnit = {
     },
 
     openSocket() {
-        this.ws = new WebSocket("ws://192.168.0.107:8050");
+        this.ws = new WebSocket("ws://192.168.1.114:8050");
         this.ws.onopen = () => this.onOpenSocket();
         this.ws.onmessage = (e) => this.onMessage(JSON.parse(e.data));
         this.ws.onclose = () => this.onClose();
@@ -174,6 +180,7 @@ const socketUnit = {
             this.send(
                 {
                     id: $("#playerId").text(),
+                    isAdmin: $("#isAdmin").text(),
                     name: $("#playerName").text(),
                     balance: $("#playerBalance").text(),
                     checkConnection: true
@@ -196,7 +203,37 @@ $('#mainFrame').on('click', function () {
     $('#frameForAllPlayersCards').hide();
     $('#innerFrame').empty();
 });
+$('.chargeNewBalance').on('click', function (e) {
+    e.preventDefault();
+    
+    socketUnit.send({
+        chargeNewBalance: true,
+        name: $(this).prev().attr('ownerName'),
+        newBalance: $(this).prev().val(),
+        id: $(this).next().val()
+    });
+    
+    $(this).prev().val('');
+});
+$('.stepInsteadUser').on('click', function (e) {
+    e.preventDefault();
+    
+    socketUnit.send({
+        makingBet: true,
+        betMakerId: parseInt($(this).next().val()),
+        betMaker: $("#playerName").text(),
+        betSum: 0
+    });
+    
+    $(this).prev().val('');
+});
+$('.nav-item-inactive').on('click', function () {
+    $('.nav-item-inactive').each(function () {
+       $(this).css({'color':'#fff'}); 
+    });
 
+    $(this).css({'color': 'yellow'});
+});
 
 
 

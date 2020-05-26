@@ -31,18 +31,6 @@ class GameController extends Controller
         return view("admin/commonField", ['user' => $user, 'allUsers' => $allUsers]);
     }
 
-    public function chargeBalance(Request $request)
-    {
-        
-        $player = User::find($request->id);
-        $player->balance += $request->newBalance;
-        $newBalance = $player->balance;
-        $playerName = $player->name;
-        $player->save();
-
-        return json_encode(['playerName' => $playerName, 'newBalance' => $newBalance]);
-    }
-
     public function runServer()
     {
         $admin = new Admin();

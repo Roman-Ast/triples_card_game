@@ -163,6 +163,7 @@ class Round
     public function setDistributor()
     {
         $players = Game::getAllPlayers();
+        
         if ($this->id == 1) {
             $rand = rand(0, count($players) - 1);
             $this->distributor = $players[$rand];
@@ -519,7 +520,7 @@ class Round
 
     public function getNextStepPlayer()
     {
-        return $this->nextStepPlayer;
+        return $this->nextStepPlayer ?? $this->first_word_right;
     }
 
     public function getLastBet()

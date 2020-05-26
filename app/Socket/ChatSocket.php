@@ -12,6 +12,7 @@ use App\Socket\UserMessages\Composer;
 class ChatSocket extends BaseSocket
 {
     protected $clients;
+    protected $adminConnection;
     private $countOfClickingPlayers = [];
 
     public function __construct()
@@ -41,7 +42,7 @@ class ChatSocket extends BaseSocket
             if (isset($player_data['checkConnection']) && $player_data['checkConnection']) {
 
                 $checkConnectionData = Composer::checkConnection($player_data, $player_sender);
-
+                $this->adminConnection = $checkConnectionData['adminConnection'];
                 $player_sender->send(json_encode($checkConnectionData));
                 
             }else if (isset($player_data['readyToPlay']) && $player_data['readyToPlay']) {
@@ -54,53 +55,70 @@ class ChatSocket extends BaseSocket
             
             
                 if (Game::areAllPlayersReady()) {
+                    
                     foreach (Game::getAllPlayers() as $player) {
                         $dataForRoundStarting = Composer::readyToPlay($player_data, $player);
                         $player->getConnection()->send(json_encode($dataForRoundStarting));
                     }
+                    $dataForRoundStartingForAdmin = Composer::infoForAdmin();
+                    if ($this->adminConnection) {
+                        $this->adminConnection->send(json_encode($dataForRoundStartingForAdmin));
+                    }
+                    
                 }
             }
             
         } else {
-            //если отправитель не в списке игроков
-            $playersIds = [];
-            foreach (Game::getAllPlayers() as $player) {
-                $playersIds[] = $player->getId();
-            }
-        
-            if (isset($player_data['id'])) {
-                if (!in_array($player_data['id'], $playersIds)) {
-                    $player_sender->send(json_encode([
-                        'connection_error' => true,
-                        'msg' => "Раунд в процессе, Вы сможете подключиться по завершении раунда..."
-                    ]));
-                } else {
-                    $dataForReconnecting = Composer::tryReconnect($player_data, $player_sender);
-                    
+            if (isset($player_data['chargeNewBalance']) && $player_data['chargeNewBalance']) {
+                
+                foreach (Game::getAllPlayers() as $player) {
+                    if ($player->getId() == $player_data['id']) {
+                        $player->chargeBalance($player_data['newBalance']);
+                    }
+                }
 
-                    $this->clients->attach($player_sender);
+                $dataAfterChargingNewBalance = [
+                    'chargeNewBalance' => true,
+                    'allUsers' => Game::getAllPlayersNormalizedForGame()
+                ];
 
-                    $dataForReconnecting['reconnectingPlayer']
-                        ->getConnection()
-                        ->send(json_encode($dataForReconnecting['roundStateAfterReconnect']));
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataAfterChargingNewBalance));
+                }
+
+            } else {
+                //если отправитель не в списке игроков
+                $playersIds = [];
+                foreach (Game::getAllPlayers() as $player) {
+                    $playersIds[] = $player->getId();
+                }
+            
+                if (isset($player_data['id'])) {
+                    if (!in_array($player_data['id'], $playersIds)) {
+                        $player_sender->send(json_encode([
+                            'connection_error' => true,
+                            'msg' => "Раунд в процессе, Вы сможете подключиться по завершении раунда..."
+                        ]));
+                    } else {
+                        $dataForReconnecting = Composer::tryReconnect($player_data, $player_sender);
+                        
+
+                        $this->clients->attach($player_sender);
+
+                        $dataForReconnecting['reconnectingPlayer']
+                            ->getConnection()
+                            ->send(json_encode($dataForReconnecting['roundStateAfterReconnect']));
+                    }
                 }
             }
+            
         }
         
         if (isset($player_data['makingBet']) && $player_data['makingBet']) {
+            
             foreach (Game::getAllPlayers() as $player) {
-                if ($player->getConnection() == $player_sender) {
-                    $response = $player->makeBet((int)$player_data["betSum"]);
-                    
-                    if (!$response) {
-                        
-                        $balanceError = [
-                            'balanceError' => true,
-                            'msg' => 'Ваша ставка превышает Ваш баланс'
-                        ];
-
-                        $player_sender->send(json_encode($balanceError));
-                    }
+                if ($player->getId() == $player_data['betMakerId']) {
+                    $player->makeBet((int)$player_data["betSum"]);
                 }
             }
             if (!Game::isCooking()) {
@@ -165,8 +183,7 @@ class ChatSocket extends BaseSocket
                 $dataAfterOpeningCards = [
                     "dataAfterOpeningCards" => true,
                     "totalCashBox" => 
-                        Game::getCurrentRound()->getRoundCashBox() +
-                        Game::getCurrentRound()->getSumOfDeafultBets(),
+                        Game::getLastRoundCashBox(),
                     "playersPoints" => Game::getPlayersPointsAfterOpeningCards(),
                     "winnerAfterOpening" => Game::getCurrentRound()->getWinnerAfterOpeningCards(),
                     "allCards" => Game::getAllPlayersCards(),
@@ -182,7 +199,7 @@ class ChatSocket extends BaseSocket
 
                 $dataAfterOpeningCards = [
                     "dataAfterOpeningCards" => true,
-                    "totalCashBox" => Game::getCurrentCooking()->getRoundCashBox(),
+                    "totalCashBox" => Game::getLastRoundCashBox(),
                     "playersPoints" => Game::getPlayersPointsAfterOpeningCards(),
                     "winnerAfterOpening" => Game::getCurrentCooking()->getWinnerAfterOpeningCards(),
                     "allCards" => Game::getAllPlayersCards(),

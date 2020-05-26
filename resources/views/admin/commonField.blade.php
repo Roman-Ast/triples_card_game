@@ -23,7 +23,12 @@
         
         <div id="mainFrame">
             <div id="room">
-                
+                <div id="waitingForStart">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <div>Ждем других игроков...</div>
+                </div>
                 <div id="connectedPlayers"></div>
                 <div id="table">
                     <div id="internalRound"></div>
@@ -35,21 +40,29 @@
                 </div>
             </div>
             <div id="myInterface">
+                <div id="playerId" style="display:none;">{{ intval($user->id) }}</div>
+                <div id="isAdmin" style="display:none;">{{ intval($user->admin) }}</div>
+                <button id="connect" class="btn btn-sm btn-primary">Подключиться</button>
                 <div class="options">
                     <ul class="nav nav-tabs" id="myTab" role="tablist">
                         <li class="nav-item">
-                            <a class="btn nav-item-inactive" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true" >
+                            <a class="btn nav-item-inactive" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true" style="color:yellow;">
                                 Баланс
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn nav-item-inactive" id="contact-tab" data-toggle="tab" href="#generatePassword" role="tab" aria-controls="contact" aria-selected="false">
+                            <a class="btn nav-item-inactive" id="contact-tab" data-toggle="tab" href="#generatePassword" role="tab" aria-controls="contact" aria-selected="false" style="color:#fff;">
                                 Пароль
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn nav-item-inactive" id="reviews-tab"data-toggle="tab"href="#reviews"role="tab"aria-controls="reviews"aria-selected="false">
-                                Ещё
+                            <a class="btn nav-item-inactive" id="reviews-tab"data-toggle="tab"href="#reviews"role="tab"aria-controls="reviews"aria-selected="false" style="color:#fff;">
+                                Сервер
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn nav-item-inactive" id="stepFor-tab" data-toggle="tab" href="#stepFor"role="tab"aria-controls="reviews"aria-selected="false" style="color:#fff;">
+                                Сходить за ...
                             </a>
                         </li>
                     </ul>
@@ -80,6 +93,20 @@
                                 <button class="btn btn-sm btn-success" id="runServer">Запустить сервер</button>
                                 <button class="btn btn-sm btn-danger" id="stopServer">Остановить сервер</button>
                             </div>
+                        </div> 
+                        <div class="tab-pane fade" id="stepFor" role="tabpanel" aria-labelledby="stepFor-tab">
+                            <table style="border-spacing: 10px;">
+                                @foreach ($allUsers as $user)
+                                <tr>
+                                    <td class="playerName">{{ $user->name }}</td>
+                                    <td class="playerBalance">{{ $user->balance }}</td>
+                                    <td>
+                                        <button class="stepInsteadUser" class="btn btn-sm btn-success">пасс</button>
+                                        <input type="hidden" value="{{ $user->id }}" class="userId">
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </table>
                         </div> 
                     </div>
                 </div>
@@ -127,7 +154,7 @@
                     });
                 });
                 
-                $('.chargeNewBalance').on('click', function(e) {
+                /*$('.chargeNewBalance').on('click', function(e) {
                     e.preventDefault();
                     
                     const data = {
@@ -183,7 +210,7 @@
                             console.log(error);
                         }
                     });
-                });
+                });*/
             });
         </script>
     </body>

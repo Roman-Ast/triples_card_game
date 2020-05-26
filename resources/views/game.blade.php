@@ -46,6 +46,7 @@
             </div>
             <div id="myInterface">
                 <div id="playerId" style="display:none;">{{ intval($user->id) }}</div>
+                <div id="isAdmin" style="display:none;">{{ intval($user->admin) }}</div>
                 <div id="userData">
                     <div id="playerName">{{ $user->name }}</div>
                     <div>Ваш баланс:</div>
@@ -53,7 +54,6 @@
                 </div>
                 <div id="controllers">
                     <div id="buttons">
-                        <button id="connectToGame" class="btn btn-sm btn-primary">Подключиться</button>
                         <div id="radiness">
                             <button id="startPlay" class="btn btn-sm btn-primary">Начать раунд</button>
                             <button id="connect" class="btn btn-sm btn-primary">Подключиться</button>

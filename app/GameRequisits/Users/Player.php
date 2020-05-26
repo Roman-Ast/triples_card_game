@@ -49,10 +49,9 @@ class Player
         return $defaultBet;
     }
 
-    public function substractHalfCashBoxSum(int $cashBox)
+    public function substractHalfCashBoxSum(int $sumForCookingEntry)
     {
-        $this->balance -= $cashBox / 2;
-        return $cashBox / 2;
+        $this->balance -= $sumForCookingEntry;
     }
 
     public function makeBet(int $bet)
@@ -140,6 +139,11 @@ class Player
     {
         $userFromDB = User::find($this->id);
         $this->balance = $userFromDB->balance;
+    }
+
+    public function chargeBalance(int $balance)
+    {
+        $this->balance += $balance;
     }
 
     public function getCardsValueAfterOpening()

@@ -1,6 +1,7 @@
 import playersArrangement from '../ playersArrangement.js';
 
 const allWinnersAgreeToCook = (msgObject) => {
+    $('#cashBoxSum').text(msgObject.lastRoundCashBox);
     console.dir(msgObject);
     $('.playerContainer').detach();
     $('#betSum').empty();
