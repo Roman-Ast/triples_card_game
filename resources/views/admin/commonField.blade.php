@@ -42,7 +42,7 @@
             <div id="myInterface">
                 <div id="playerId" style="display:none;">{{ intval($user->id) }}</div>
                 <div id="isAdmin" style="display:none;">{{ intval($user->admin) }}</div>
-                <button id="connect" class="btn btn-sm btn-primary">Подключиться</button>
+                <button id="connect" class="btn btn-sm btn-primary" style="display: none;">Подключиться</button>
                 <div class="options">
                     <ul class="nav nav-tabs" id="myTab" role="tablist">
                         <li class="nav-item">
@@ -187,6 +187,10 @@
                             console.log(error);
                         }
                     });
+
+                    setTimeout(() => {
+                        $('#connect').click();
+                    }, 2000);
                 });
             });
         </script>

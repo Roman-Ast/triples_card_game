@@ -1,4 +1,18 @@
 const onOpenCards = (msgObject, checkingOtherPlayersConnection, playersArrangement) => {
+
+    const isAdmin = $('#isAdmin').text();
+    
+    if (isAdmin == 1) {
+        msgObject.allPlayers.forEach(item => {
+            $('.playerName').each(function () {
+                if ($(this).text() === item.name) {
+                    console.log(item.name);
+                    $(this).next().text(item.balance);
+                }
+            });
+        });
+    }
+
     $('#cashBoxSum').text(msgObject.totalCashBox);
     $('#modalBody').empty();
     $('#modal').hide();

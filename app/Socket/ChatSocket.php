@@ -128,6 +128,7 @@ class ChatSocket extends BaseSocket
 
                 $dataAboutRoundState = [
                     "roundStateAfterBetting" => true,
+                    "allPlayers" => Game::getAllPlayersNormalizedForGame(),
                     "isCooking" => Game::isCooking(),
                     "currentStepPlayer" => $currentRound->getCurrentStepPlayer()->getName(),
                     "nextStepPlayer" => $currentRound->getNextStepPlayer()->getName(),
@@ -155,6 +156,7 @@ class ChatSocket extends BaseSocket
                 $dataAboutRoundState = [
                     "roundStateAfterBetting" => true,
                     "isCooking" => Game::isCooking(),
+                    "allPlayers" => Game::getAllPlayersNormalizedForGame(),
                     "currentStepPlayer" => $currentCooking->getCurrentStepPlayer()->getName(),
                     "nextStepPlayer" => $currentCooking->getNextStepPlayer()->getName(),
                     "playerOpenCardAbility" => $currentCooking->getPlayerOpenCardAbility(),

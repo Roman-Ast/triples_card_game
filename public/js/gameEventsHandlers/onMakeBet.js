@@ -1,4 +1,18 @@
 const onMakeBet = (msgObject, checkingOtherPlayersConnection, playersArrangement) => {
+
+    const isAdmin = $('#isAdmin').text();
+    
+    if (isAdmin == 1) {
+        msgObject.allPlayers.forEach(item => {
+            $('.playerName').each(function () {
+                if ($(this).text() === item.name) {
+                    console.log(item.name);
+                    $(this).next().text(item.balance);
+                }
+            });
+        });
+    }
+
     $(`#betSum`).empty();
     //удаляем из селекта суммы ненужные options, так как меньше уже поставить нельзя
     if (!msgObject.toCollate) {

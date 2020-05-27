@@ -2,6 +2,7 @@ import playersArrangement from '../ playersArrangement.js';
 
 const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
     clearInterval(checkingOtherPlayersConnection);
+
     $('#innerFrame').empty();
     $('#betSum').empty();
     //убираем спиннер ожидания
@@ -30,41 +31,6 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
     const currentDistributor = msgObject.currentDistributor;
     const currentFirstWordPlayer = msgObject.currentFirstWordPlayer;
 
-    //Выводим модальное окно с информацией о раунде
-    /*const modalBody = document.querySelector("#modalBody");
-
-    const currentRoundField = document.createElement("div");
-    currentRoundField.innerHTML = `Текущий раунд: ${msgObject.currentRoundId}`;
-    const defaultBetField = document.createElement("div");
-    defaultBetField.innerHTML = `Кон: ${msgObject.defaultBet}`;
-    const currentDistributorField = document.createElement("div");
-    currentDistributorField.innerHTML = `Раздающий: ${msgObject.currentDistributor}`;
-    const currentFirstWordPlayerField = document.createElement("div");
-    currentFirstWordPlayerField.innerHTML = `Первое слово: ${msgObject.currentFirstWordPlayer}`;
-
-    modalBody.appendChild(currentRoundField)
-            .appendChild(defaultBetField)
-            .appendChild(currentDistributorField)
-            .appendChild(currentFirstWordPlayerField);
-            
-    $("#modal").show(1000);
-    $("#modalClose").on("click", function () {
-        $("#modal").hide(1000); 
-    });
-    
-    //смещаем модальное окно на половину вправо и вниз
-    const roomHeight = $("#room").height();
-    const modalHeight = $("#modal").height();
-    const roomWidth = $("#room").width();
-    const modalWidth = $("#modal").width();
-    const tableHeight = $("#table").height();
-    const tableWidth = $("#table").width();
-
-    $("#modal")
-        .css({"left": `calc(${roomWidth / 2 - modalWidth / 2}px)`})
-        .css({"top": `calc(${roomHeight / 2 - modalHeight / 2}px)`});*/
-
-
     if (msgObject.name !== currentFirstWordPlayer) {
         $("#makeBet").attr("disabled", true);
         $("#save").attr("disabled", true);
@@ -92,7 +58,6 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
 
     //заполняем поле "карты" текущего игрока
     cards.forEach(card => {
-        
         const cardContainer = document.createElement("div");
         const img = new Image(96.4, 144.6);
         img.src = card.face;
@@ -106,7 +71,25 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
         }
         
     });
-            
+    
+    const isAdmin = $('#isAdmin').text();
+    
+    if (isAdmin == 1) {
+        const allPlayers = msgObject.allPlayers.map(player => player.name);
+        
+        $('.playerName').each(function () {
+            if (allPlayers.includes($(this).text())) {
+                msgObject.allPlayers.forEach(item => {
+                    if ($(this).text() === item.name) {
+                        $(this).next(item.balance);
+                    }
+                });
+            } else {
+                $(this).next().next().children().eq(1).attr('disabled', true);
+            }
+        });
+        
+    }
 }
 
 export default onRoundStart;
