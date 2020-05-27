@@ -610,6 +610,9 @@ class Round
                 Game::setLastRoundWinner([$player]);
             }
         }
+        //снимаем налог
+        Game::chargeTax();
+        
         Game::endCurrentRound();
     }
 
@@ -644,6 +647,9 @@ class Round
                 $winners[] = $player;
             }
         }
+        //снимаем налог
+        Game::chargeTax();
+
         Game::setLastRoundWinner($winners);
         Game::endCurrentRound();
     }
@@ -669,6 +675,8 @@ class Round
                 $userFromDb->save();
             }
         }
+        //снимаем налог
+        Game::chargeTax();
 
         Game::setLastRoundWinner([$this->winner]);
         Game::endCurrentRound();

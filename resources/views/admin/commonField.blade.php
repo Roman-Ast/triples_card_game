@@ -188,21 +188,6 @@
                         }
                     });
                 });
-                
-                $('#stopServer').on('click', function () {
-                    $.ajax({
-                        data: {},
-                        url: "{{ route('stopServer') }}",
-                        type: "GET",
-                        dataType: 'json',
-                        success: function (data) {
-                            console.log(data);
-                        },
-                        error: function (error) {
-                            console.log(error);
-                        }
-                    });
-                });
             });
         </script>
     </body>

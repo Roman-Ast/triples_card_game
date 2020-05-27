@@ -6,6 +6,7 @@ use App\Socket\Base\BaseSocket;
 use Ratchet\ConnectionInterface;
 use App\GameRequisits\Users\Player;
 use App\GameRequisits\Game;
+use App\Admin;
 use App\Socket\UserMessages\Composer;
 
 
@@ -385,6 +386,9 @@ class ChatSocket extends BaseSocket
                     $client->send(json_encode($data));
                 }
             }
+        } else if (isset($player_data['stopServer']) && $player_data['stopServer']) {
+            var_dump('stop_Server');
+            Admin::stopServer();
         }
     }
 

@@ -544,7 +544,9 @@ class Cooking
                 $userFromDb->save();
             }
         }
-
+        //снимаем налог
+        Game::chargeTax();
+        
         Game::setLastRoundWinner([$this->winner]);
         Game::endCurrentRound();
     }
@@ -580,6 +582,9 @@ class Cooking
                 $winners[] = $player;
             }
         }
+        //снимаем налог
+        Game::chargeTax();
+        
         Game::setLastRoundWinner($winners);
         Game::endCurrentRound();
     }
@@ -612,6 +617,8 @@ class Cooking
                 Game::setLastRoundWinner([$player]);
             }
         }
+        //снимаем налог
+        Game::chargeTax();
 
         Game::endCurrentRound();
     }

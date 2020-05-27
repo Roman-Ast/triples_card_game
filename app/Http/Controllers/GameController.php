@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use App\User;
 use Session;
 use App\Admin;
+use App\Game as modelGame;
+use App\GameRequisits\Game;
+use DB;
+use App\Tax;
 
 class GameController extends Controller
 {
@@ -35,29 +39,8 @@ class GameController extends Controller
 
     public function runServer()
     {
-        $outputArr = [];
-        $output = exec('cd .. && php artisan chat_server:serve', $outputArr, $ret_var);
-        
-        return json_encode(['output' => $outputArr, 'status' => $ret_var]);
-    }
+        $response = Admin::runServer();
 
-    public function stopServer()
-    {
-        $outputArr = [];
-        exec('lsof -i -P -n | grep :8050', $outputArr, $ret_var);
-        
-        $arr = explode(' ', $outputArr[0]);
-        $trimedArr = array_filter($arr, function($item) {
-            if ($item !== '') {
-                return $item;
-            }
-        });
-        $slicedArr = array_slice($trimedArr, 0);
-        $processPID = $slicedArr[1];
-
-        $killedOutputArr = [];
-
-        exec('kill -9 ' . $processPID, $killedOutputArr, $killed_ret_var);
-        return json_encode(['outputGrep' => $outputArr,'outputKilled' => $killedOutputArr, 'status' => $killed_ret_var]);
+        return json_encode($response);
     }
 }

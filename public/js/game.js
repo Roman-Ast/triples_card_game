@@ -26,7 +26,7 @@ const socketUnit = {
         this.shareCashBoxAfterOpeningBtn = $('#shareCashBoxAfterOpening');
         this.cookingBtn = $('#cooking');
         this.notCookingBtn = $('#notCooking');
-        this.runServerBtn = $('#runServer');
+        this.stopServerBtn = $('#stopServer');
         this.playersArrangement = playersArrangement;
         this.mainFrame = $('#mainFrame');
         this.frameForAllPlayersCardsClose = $('#frameForAllPlayersCardsClose');
@@ -122,6 +122,11 @@ const socketUnit = {
                 cooking: false
             });
         });
+        this.stopServerBtn.bind('click', () => {
+            this.send({
+                stopServer: true
+            });
+        });
     },
 
     send(objToSend, f = ()=>{}) {
@@ -166,7 +171,7 @@ const socketUnit = {
     },
 
     openSocket() {
-        this.ws = new WebSocket("ws://192.168.1.114:8050");
+        this.ws = new WebSocket("ws://192.168.1.102:8050");
         this.ws.onopen = () => this.onOpenSocket();
         this.ws.onmessage = (e) => this.onMessage(JSON.parse(e.data));
         this.ws.onclose = () => this.onClose();

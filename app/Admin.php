@@ -7,6 +7,8 @@ use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
 use App\Socket\ChatSocket;
+use App\Game as ModelGame;
+use App\GameRequisits\Game;
 
 class Admin
 {
@@ -14,29 +16,50 @@ class Admin
 
     public static function runServer()
     {
-        $descriptorspec = array(
-            0 => array("pipe", "r"),  // stdin - канал, из которого дочерний процесс будет читать
-            1 => array("pipe", "w"),  // stdout - канал, в который дочерний процесс будет записывать 
-            2 => array("file", "/tmp/error-output.txt", "a") // stderr - файл для записи
-         );
-         
-        self::$process = proc_open('cd .. && php artisan chat_server:serve', $descriptorspec, $pipes);
+        $outputArr = [];
+        $output = exec('cd .. && php artisan chat_server:serve', $outputArr, $ret_var);
         
-        if (self::$process) {
-            return 'server is started...';
-        } else {
-            return 'error';
-        }
+        return [
+            'output' => $outputArr,
+            'status' => $ret_var
+        ];
+    }
+
+    public static function makeRecordAboutGame()
+    {
+        $game = new ModelGame();
+        $game->round_qty = count(Game::getRounds());
+        $game->cooking_qty = count(Game::getCookings());
+        $game->total_cashbox = Game::getTotalCashBoxesSum();
+        $game->total_tax = Tax::where('game_id', Game::getId())->sum('sum');
+        $game->game_ended_at = date('d F Y H:i');
+        $game->save();
     }
 
     public static function stopServer()
     {
-        $responseCode = proc_close(self::$process);
+        self::makeRecordAboutGame();
 
-        if ($responseCode !== -1) {
-            return 'server is stoped...';
-        } else {
-            return 'error';
-        }
+        $outputArr = [];
+        exec('lsof -i -P -n | grep :8050', $outputArr, $ret_var);
+        
+        $arr = explode(' ', $outputArr[0]);
+        $trimedArr = array_filter($arr, function($item) {
+            if ($item !== '') {
+                return $item;
+            }
+        });
+        $slicedArr = array_slice($trimedArr, 0);
+        $processPID = $slicedArr[1];
+
+        $killedOutputArr = [];
+
+        exec('kill -9 ' . $processPID, $killedOutputArr, $killed_ret_var);
+        
+        return [
+            'outputGrep' => $outputArr,
+            'outputKilled' => $killedOutputArr,
+            'status' => $killed_ret_var
+        ];
     }
 }

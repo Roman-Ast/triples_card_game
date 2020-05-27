@@ -7,6 +7,7 @@ use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
 use App\Socket\ChatSocket;
+use App\GameRequisits\Game;
 
 class ChatServer extends Command
 {
@@ -31,6 +32,7 @@ class ChatServer extends Command
      */
     public function __construct()
     {
+        Game::setId();
         parent::__construct();
     }
 

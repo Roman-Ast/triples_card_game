@@ -11,6 +11,7 @@ use DB;
 
 class Game
 {
+    private static $id = 0;
     private static $adminConnection;
     private static $players = [];
     private static $rounds = [];
@@ -23,7 +24,7 @@ class Game
     private static $currentCooking;
     private static $currentDistributor;
     private static $firstWordPlayer;
-    private static $totalCashBoxesSum;
+    private static $totalCashBoxesSum = 0;
     private static $lastRoundWinner;
     private static $lastRoundCashBox;
     private static $noneNotWinnersAgreedToCook = false;
@@ -36,6 +37,38 @@ class Game
     private const DEFAULT_BET = 50;
     private const STEP_IN_BETS = 10;
     private const TAX = 10;
+
+    public static function setId()
+    {
+        $lastId = DB::table('games')->max('id');
+        if ($lastId) {
+            self::$id = $lastId + 1;
+        } else {
+            self::$id = 1;
+        }
+        
+        var_dump(self::$id);
+    }
+
+    public static function getId()
+    {
+        return self::$id;
+    }
+
+    public static function getTotalCashBoxesSum()
+    {
+        return self::$totalCashBoxesSum;
+    }
+
+    public static function getRounds()
+    {
+        return self::$rounds;
+    }
+
+    public static function getCookings()
+    {
+        return self::$cookings;
+    }
 
     public static function getAdminConnection()
     {
@@ -54,6 +87,7 @@ class Game
                 unset(self::$players[$index]);
             }
         }
+        self::$players = array_slice(self::$players, 0);
     }
 
     public static function isCooking()
@@ -242,7 +276,6 @@ class Game
     public static function setLastRoundCashBox(int $cashBox)
     {
         self::$lastRoundCashBox = $cashBox;
-        self::$totalCashBoxesSum += $cashBox;
     }
 
     public static function getLastRoundCashBox()
@@ -252,9 +285,6 @@ class Game
 
     public static function setLastRoundWinner(array $winner)
     {
-        //снимаем налог
-        self::chargeTax();
-        
         self::$isCooking = false;
         self::$allwinnersAgreedToCook = false;
         self::$someNotWinnerAgreedToCook = false;
@@ -314,6 +344,7 @@ class Game
             ? $tax->round_id = self::$currentCooking->getId()
             : $tax->round_id = self::$currentRound->getId();
         $tax->cashbox = self::$lastRoundCashBox;
+        $tax->game_id = self::$id;
         $tax->tax_percent = self::TAX;
         $tax->sum = $taxSum;
         $tax->save();
@@ -401,11 +432,6 @@ class Game
     public static function getCurrentCooking()
     {
         return self::$currentCooking;
-    }
-
-    public static function getRounds()
-    {
-        return self::$rounds;
     }
     
     public static function getCurrentDistributor()
@@ -549,6 +575,8 @@ class Game
 
     public static function endCurrentRound()
     {
+        self::$totalCashBoxesSum = self::$lastRoundCashBox;
+
         self::$isCooking = false;
         self::$allwinnersAgreedToCook = false;
         self::$someNotWinnerAgreedToCook = false;

@@ -8,5 +8,5 @@ use Illuminate\Notifications\Notifiable;
 
 class Game extends Authenticatable
 {
-    protected $table = 'game';
+    protected $table = 'games';
 }
