@@ -6,7 +6,6 @@ const onMakeBet = (msgObject, checkingOtherPlayersConnection, playersArrangement
         msgObject.allPlayers.forEach(item => {
             $('.playerName').each(function () {
                 if ($(this).text() === item.name) {
-                    console.log(item.name);
                     $(this).next().text(item.balance);
                 }
             });

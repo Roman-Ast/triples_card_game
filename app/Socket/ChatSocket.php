@@ -80,7 +80,7 @@ class ChatSocket extends BaseSocket
 
                 $dataAfterChargingNewBalance = [
                     'chargeNewBalance' => true,
-                    'allUsers' => Game::getAllPlayersNormalizedForGame()
+                    'allPlayers' => Game::getAllPlayersNormalizedForGame()
                 ];
 
                 foreach ($this->clients as $client) {

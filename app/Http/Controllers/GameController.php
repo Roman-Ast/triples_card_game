@@ -43,4 +43,18 @@ class GameController extends Controller
 
         return json_encode($response);
     }
+
+    public function chargeBalanceOutGame(Request $request)
+    {
+        $player = User::find($request->playerId);
+        if ($player) {
+            $player->balance = $request->newBalance;
+            $player->save();
+
+            return json_encode(['name' => $player->name, 'balance' => $player->balance]);
+        } else {
+            return json_encode(['error' => 'no player was found']);
+        }
+        
+    }
 }

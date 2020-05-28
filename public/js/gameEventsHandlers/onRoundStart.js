@@ -75,20 +75,21 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
     const isAdmin = $('#isAdmin').text();
     
     if (isAdmin == 1) {
-        const allPlayers = msgObject.allPlayers.map(player => player.name);
+        allPlayers.forEach(item => {
+            $('.playerName').each(function () {
+                if ($(this).text() === item.name) {
+                    $(this).next().text(item.balance);
+                }
+            });
+        });
         
+        const allPlayersNames = msgObject.allPlayers.map(player => player.name);
+
         $('.playerName').each(function () {
-            if (allPlayers.includes($(this).text())) {
-                msgObject.allPlayers.forEach(item => {
-                    if ($(this).text() === item.name) {
-                        $(this).next(item.balance);
-                    }
-                });
-            } else {
+            if (!allPlayersNames.includes($(this).text())) {
                 $(this).next().next().children().eq(1).attr('disabled', true);
             }
         });
-        
     }
 }
 

@@ -11,6 +11,8 @@
         <title>Админ-панель</title>
         <link rel="stylesheet" href="{{ URL::asset('css/main.css') }}">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css"
+integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
     </head>
     <body>
         <div id="frameForAllPlayersCards">
@@ -40,6 +42,10 @@
                 </div>
             </div>
             <div id="myInterface">
+                <div>
+                    <i id="interfaceUp" class="fas fa-angle-up" style="color:#fff;font-size: 25px;"></i>
+                    <i id="interfaceDown" class="fas fa-angle-down" style="color:#fff;font-size: 25px;"></i>
+                </div>
                 <div id="playerId" style="display:none;">{{ intval($user->id) }}</div>
                 <div id="isAdmin" style="display:none;">{{ intval($user->admin) }}</div>
                 <button id="connect" class="btn btn-sm btn-primary" style="display: none;">Подключиться</button>
@@ -80,8 +86,9 @@
                                     <td class="playerBalance">{{ $user->balance }}</td>
                                     <td>
                                         <input type="text" class="newBalance" ownerName="{{ $user->name }}">
-                                        <button class="chargeNewBalance" class="btn btn-sm btn-success">начислить</button>
+                                        <button class="chargeNewBalance" class="btn btn-sm btn-success">в игре</button>
                                         <input type="hidden" value="{{ $user->id }}" class="userId">
+                                        <button class="chargeNewBalanceOutGame" class="btn btn-sm btn-success">вне игры</button>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -91,6 +98,7 @@
                             <button id="passwordGenerate" class="btn btn-sm btn-danger">Сгенерировать пароль</button>
                             <div id="passwordArea">
                                 <div id="password"></div>
+                                <button id="copyToClipBoard" onclick="CopyToClipboard('password')" class="btn btn-sm btn-warning">Копировать</button>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
@@ -120,8 +128,8 @@
                                     <td class="playerName">{{ $user->name }}</td>
                                     <td class="playerBalance">{{ $user->balance }}</td>
                                     <td>
-                                        <input type="text" class="newBalance" ownerName="{{ $user->name }}">
-                                        <button class="chargeNewBalance" class="btn btn-sm btn-success">начислить</button>
+                                        <input type="text" class="" ownerName="{{ $user->name }}">
+                                        <button class="" class="btn btn-sm btn-success">начислить</button>
                                         <input type="hidden" value="{{ $user->id }}" class="userId">
                                     </td>
                                 </tr>
@@ -148,13 +156,104 @@
         <script src="{{ URL::asset('js/gameEventsHandlers/onAllWinnersAgreeToCook.js') }}" type="module"></script>
         <script src="{{ URL::asset('js/gameEventsHandlers/onSomeNotWinnersAgreeToCook.js') }}" type="module"></script>
         <script type="text/javascript">
+            const initialInterfaceHeight = $('#myInterface').height();
+
+            $('#interfaceUp').on('click', function () {
+                interfaceUp();
+                $('#myTabContent').height($(window).height() / 100 * 75);
+                //$('#myInterface').height($(window).height() * 2);
+                $('#myInterface').css({'z-index': '5'});
+                $(this).hide();
+                $('#interfaceDown').show();
+            });
+
+            $('#interfaceDown').on('click', function () {
+                interfaceDown();
+                $(this).hide();
+                $('#interfaceUp').show();
+            });
+
+            $('.nav-item').on('click', function () {
+                $('#myTabContent').height($('#myInterface').height() / 100 * 75);
+            });
+
+            const interfaceUp = () => {
+                let h = 10;
+                const interfaceUping = setInterval(() => {
+                    $('#myInterface').height(h);
+                    h += 10;
+                    if (h >= $(window).height() * 2) {
+                        stopInterfaceUping();
+                    }
+                }, 10);
+                const stopInterfaceUping = () => {
+                    clearInterval(interfaceUping);
+                };
+            };
+
+            const interfaceDown = () => {
+                let h = $(window).height() * 2;
+                const interfaceDowning = setInterval(() => {
+                    $('#myInterface').height(h);
+                    h -= 10;
+                    if (h <= initialInterfaceHeight) {
+                        stopInterfaceDowning();
+                    }
+                }, 10);
+                const stopInterfaceDowning = () => {
+                    clearInterval(interfaceDowning);
+                };
+            };
+
+            const CopyToClipboard = (containerid) => {
+                if (document.selection) { 
+                    const range = document.body.createTextRange();
+                    range.moveToElementText(document.getElementById(containerid));
+                    range.select().createTextRange();
+                    document.execCommand("Copy"); 
+
+                } else if (window.getSelection) {
+                    const range = document.createRange();
+                    range.selectNode(document.getElementById(containerid));
+                    window.getSelection().addRange(range);
+                    document.execCommand("Copy");
+                }
+            };
+
             $(function () {
-            
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     }
                 });
+
+                $('.chargeNewBalanceOutGame').on('click', function (e) {
+                    e.preventDefault();
+                    
+                    $.ajax({
+                        data: {
+                            playerId: $(this).prev().val(),
+                            newBalance: $(this).prev().prev().prev().val()
+                        },
+                        url: "{{ route('chargeBalanceOutGame') }}",
+                        type: "POST",
+                        dataType: 'json',
+                        success: function (data) {
+                            console.log(data);
+                            $('.playerName').each(function () {
+                               if ($(this).text() === data.name) {
+                                   $(this).next().text(data.balance);
+                               } 
+                            });
+                        },
+                        error: function (error) {
+                            console.log(error);
+                        }
+                    });
+
+                    $(this).prev().prev().prev().val('');
+                });
+
                 $('#passwordGenerate').on('click', function(e) {
                     e.preventDefault();
                     
@@ -164,11 +263,10 @@
                         type: "GET",
                         dataType: 'json',
                         success: function (data) {
-                            console.log(data);
                             $('#password').text(error.responseText);
                         },
                         error: function (error) {
-                            console.log(error);
+                            $('#copyToClipBoard').show();
                             $('#password').text(error.responseText);
                         }
                     });

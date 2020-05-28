@@ -27,6 +27,7 @@ const socketUnit = {
         this.cookingBtn = $('#cooking');
         this.notCookingBtn = $('#notCooking');
         this.stopServerBtn = $('#stopServer');
+        this.passwordGenerateBtn = $('#passwordGenerate');
         this.playersArrangement = playersArrangement;
         this.mainFrame = $('#mainFrame');
         this.frameForAllPlayersCardsClose = $('#frameForAllPlayersCardsClose');
@@ -171,7 +172,7 @@ const socketUnit = {
     },
 
     openSocket() {
-        this.ws = new WebSocket("ws://192.168.1.102:8050");
+        this.ws = new WebSocket("ws://192.168.0.107:8050");
         this.ws.onopen = () => this.onOpenSocket();
         this.ws.onmessage = (e) => this.onMessage(JSON.parse(e.data));
         this.ws.onclose = () => this.onClose();
