@@ -48,7 +48,7 @@ class GameController extends Controller
     {
         $player = User::find($request->playerId);
         if ($player) {
-            $player->balance = $request->newBalance;
+            $player->balance += $request->newBalance;
             $player->save();
 
             return json_encode(['name' => $player->name, 'balance' => $player->balance]);

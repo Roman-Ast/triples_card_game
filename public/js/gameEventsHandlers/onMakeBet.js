@@ -1,7 +1,13 @@
 const onMakeBet = (msgObject, checkingOtherPlayersConnection, playersArrangement) => {
 
     const isAdmin = $('#isAdmin').text();
-    
+    if (msgObject.nextStepPlayer === $('#playerName').text()) {
+        const audio = new Audio();
+        audio.preload = 'auto';
+        audio.src = '/audio/nextStep.mpeg';
+        audio.play();
+    }
+
     if (isAdmin == 1) {
         msgObject.allPlayers.forEach(item => {
             $('.playerName').each(function () {

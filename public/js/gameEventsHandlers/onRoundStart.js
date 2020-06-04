@@ -1,8 +1,9 @@
 import playersArrangement from '../ playersArrangement.js';
 
 const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
+    
     clearInterval(checkingOtherPlayersConnection);
-
+    $('#playerBalance').css({'color': '#fff'});
     $('#innerFrame').empty();
     $('#betSum').empty();
     //убираем спиннер ожидания
@@ -90,6 +91,13 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
                 $(this).next().next().children().eq(1).attr('disabled', true);
             }
         });
+    }
+
+    if (msgObject.currentFirstWordPlayer === $('#playerName').text()) {
+        const audio = new Audio();
+        audio.preload = 'auto';
+        audio.src = '/audio/nextStep.mpeg';
+        audio.play();
     }
 }
 

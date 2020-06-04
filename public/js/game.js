@@ -97,24 +97,20 @@ const socketUnit = {
         });
         this.takeCashBoxBtn.bind('click', () => {
             this.send({endRoundWithoutShowingUp: true});
-            $('#playerBalance').text(+$('#cashBoxSum').text() + +$('#playerBalance').text());
         });
         this.takeCashBoxAfterOpeningBtn.bind('click', () => {
             this.send({endRoundAfterOpeningCards: true});
-            $('#playerBalance').text(+$('#cashBoxSum').text() + +$('#playerBalance').text());
         });
         this.shareCashBoxAfterOpeningBtn.bind('click', () => {
             this.send({shareCashBoxAfterOpening: true});
-            if (this.msgObject.winners.includes($('#playerName').text())) {
-                const share = Math.round($('#cashBoxSum').text() / this.msgObject.winners.length);
-                $('#playerBalance').text(+$('#playerBalance').text() + share);
-            }
         });
         this.cookingBtn.bind('click', () => {
             this.send({
                 aboutCooking: true,
                 cooking: true
             });
+            this.cookingBtn.attr('disabled', true);
+            this.notCookingBtn.attr('disabled', true);
             $('#playerBalance').text($('#playerBalance').text() - $('#cashBoxSum').text() / 2);
         });
         this.notCookingBtn.bind('click', () => {
@@ -122,6 +118,8 @@ const socketUnit = {
                 aboutCooking: true,
                 cooking: false
             });
+            this.cookingBtn.attr('disabled', true);
+            this.notCookingBtn.attr('disabled', true);
         });
         this.stopServerBtn.bind('click', () => {
             this.send({
@@ -172,7 +170,7 @@ const socketUnit = {
     },
 
     openSocket() {
-        this.ws = new WebSocket("ws://192.168.0.107:8050");
+        this.ws = new WebSocket("ws://192.168.1.102:8050");
         this.ws.onopen = () => this.onOpenSocket();
         this.ws.onmessage = (e) => this.onMessage(JSON.parse(e.data));
         this.ws.onclose = () => this.onClose();
@@ -241,20 +239,3 @@ $('.nav-item-inactive').on('click', function () {
 
     $(this).css({'color': 'yellow'});
 });
-
-
-
-
-
-
-/*расположение ставок по кругу
-    const num = defaultBets.length; // Число картинок
-    const wrap = $("#cashBox").height(); // Размер "холста" для расположения картинок
-    const radius = wrap / 3; // Радиус нашего круга
-    
-    for (i = 0;i < num; i++){
-        let f = 2 / num * i * Math.PI;  // Рассчитываем угол каждой картинки в радианах
-        let left = wrap + radius * Math.sin(f) + 'px';
-        let top = wrap + radius * Math.cos(f) + 'px';
-        $('.bet').eq(i).css({'top':top,'left':left}); // Устанавливаем значения каждой картинке
-    }*/

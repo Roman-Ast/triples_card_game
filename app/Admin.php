@@ -9,6 +9,7 @@ use Ratchet\WebSocket\WsServer;
 use App\Socket\ChatSocket;
 use App\Game as ModelGame;
 use App\GameRequisits\Game;
+use App\Tax;
 
 class Admin
 {
@@ -30,8 +31,9 @@ class Admin
         $game = new ModelGame();
         $game->round_qty = count(Game::getRounds());
         $game->cooking_qty = count(Game::getCookings());
-        $game->total_cashbox = Game::getTotalCashBoxesSum();
+        $game->total_cashbox = Tax::where('game_id', Game::getId())->sum('cashbox');
         $game->total_tax = Tax::where('game_id', Game::getId())->sum('sum');
+        $game->all_money_in_game = $game->total_cashbox + $game->total_tax;
         $game->game_ended_at = date('d F Y H:i');
         $game->save();
     }

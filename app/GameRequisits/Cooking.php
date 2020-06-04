@@ -532,6 +532,9 @@ class Cooking
 
         $this->winner = Game::getLastRoundWinner()[0];
 
+        //снимаем налог
+        Game::chargeTax();
+
         foreach ($players as $player) {
             if ($player->getId() == $this->winner->getId()) {
                 $userFromDb = User::find($this->winner->getId());
@@ -544,8 +547,6 @@ class Cooking
                 $userFromDb->save();
             }
         }
-        //снимаем налог
-        Game::chargeTax();
         
         Game::setLastRoundWinner([$this->winner]);
         Game::endCurrentRound();
@@ -561,7 +562,7 @@ class Cooking
         }
 
         //снимаем налог
-        //$this->substractTax();
+        Game::chargeTax();
         
         foreach ($players as $player) {
             if (in_array($player->getId(), $arrOfIdsOfWInners)) {
@@ -582,8 +583,6 @@ class Cooking
                 $winners[] = $player;
             }
         }
-        //снимаем налог
-        Game::chargeTax();
         
         Game::setLastRoundWinner($winners);
         Game::endCurrentRound();
@@ -599,6 +598,9 @@ class Cooking
             }
         }
 
+        //снимаем налог
+        Game::chargeTax();
+        
         foreach ($players as $player) {
             if ($player->getId() == $this->winner->getId()) {
                 $userFromDb = User::find($this->winner->getId());
@@ -617,8 +619,6 @@ class Cooking
                 Game::setLastRoundWinner([$player]);
             }
         }
-        //снимаем налог
-        Game::chargeTax();
 
         Game::endCurrentRound();
     }

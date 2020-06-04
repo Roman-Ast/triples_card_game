@@ -24,7 +24,6 @@ class Game
     private static $currentCooking;
     private static $currentDistributor;
     private static $firstWordPlayer;
-    private static $totalCashBoxesSum = 0;
     private static $lastRoundWinner;
     private static $lastRoundCashBox;
     private static $noneNotWinnersAgreedToCook = false;
@@ -34,9 +33,16 @@ class Game
     private static $cookingPlayers = [];
     private static $currentCookingId = 0;
     private static $winnersIds = [];
+    private static $cookingEntryFee = 0;
+    private static $taxSum = 0;
     private const DEFAULT_BET = 50;
     private const STEP_IN_BETS = 10;
     private const TAX = 10;
+
+    public static function getTaxSum()
+    {
+        return self::$taxSum;
+    }
 
     public static function setId()
     {
@@ -46,18 +52,11 @@ class Game
         } else {
             self::$id = 1;
         }
-        
-        var_dump(self::$id);
     }
 
     public static function getId()
     {
         return self::$id;
-    }
-
-    public static function getTotalCashBoxesSum()
-    {
-        return self::$totalCashBoxesSum;
     }
 
     public static function getRounds()
@@ -99,7 +98,7 @@ class Game
     {
         if (!in_array($informingPlayer->getId(), self::$winnersIds) && $readiness) {
             $informingPlayer->substractHalfCashBoxSum(self::$lastRoundCashBox / 2);
-            self::$lastRoundCashBox = round(self::$lastRoundCashBox += self::$lastRoundCashBox / 2);
+            self::$cookingEntryFee += round(self::$lastRoundCashBox / 2);
         }
         
         if (count(self::$cookingPlayers) < 1) {
@@ -232,6 +231,7 @@ class Game
 
     public static function startCooking()
     {  
+        self::$lastRoundCashBox += self::$cookingEntryFee;
         foreach (self::$players as $player) {
             $player->changeRadinessAfterEndingRound();
             $player->dropCards();
@@ -285,7 +285,6 @@ class Game
 
     public static function setLastRoundWinner(array $winner)
     {
-        self::$isCooking = false;
         self::$allwinnersAgreedToCook = false;
         self::$someNotWinnerAgreedToCook = false;
         self::$connectAbility = true;
@@ -293,6 +292,7 @@ class Game
         self::$noneNotWinnersAgreedToCook = false;
         self::$lastRoundWinner = $winner;
         self::$winnersIds = [];
+        self::$cookingEntryFee = 0;
         
         foreach (self::$lastRoundWinner as $player) {
             self::$winnersIds[] = $player->getId();
@@ -336,6 +336,7 @@ class Game
     public static function chargeTax()
     {
         $taxSum = ceil(self::$lastRoundCashBox / 100 * self::TAX);
+        self::$taxSum = $taxSum;
         self::$lastRoundCashBox = floor(self::$lastRoundCashBox - $taxSum);
         
         $tax = new Tax();
@@ -533,7 +534,7 @@ class Game
             return $normalized;
         } else {
             foreach (self::$cookingPlayers as $item) {
-                if (!in_array($item['player']->getName(), self::getCurrentCooking()->getSavingPlayers())) {
+                if (in_array($item['player']->getName(), self::getCurrentCooking()->getPlayersNormalized())) {
                     $normalized[] = [
                         'name' => $item['player']->getName(),
                         'cards' => array_map(function($card) {
@@ -575,7 +576,7 @@ class Game
 
     public static function endCurrentRound()
     {
-        self::$totalCashBoxesSum = self::$lastRoundCashBox;
+        self::$cookingEntryFee = 0;
 
         self::$isCooking = false;
         self::$allwinnersAgreedToCook = false;

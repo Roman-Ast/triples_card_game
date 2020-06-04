@@ -17,20 +17,25 @@ class Diller
         shuffle($deck);
         
         foreach ($players as $player) {
-            if ($player->getName() === 'Римма') {
+            /*if ($player->getName() === 'Рус') {
                 $player->takeCard(new Card(5, "Король", "Червы", 10, '/images/cards/king-hearts.png'));
                 $player->takeCard(new Card(13, "Валет", "Червы", 10, '/images/cards/valet-hearts.png'));
                 $player->takeCard(new Card(18, "Десять", "Буби", 10, '/images/cards/10-bubi.png'));
-            } else if ($player->getName() === 'Давид') {
+            } else if ($player->getName() === 'Санечка') {
                 $player->takeCard(new Card(15, "Валет", "Крести", 10, '/images/cards/valet-clubs.png'));
                 $player->takeCard(new Card(11, "Дама", "Крести", 10, '/images/cards/lady-clubs.png'));
                 $player->takeCard(new Card(18, "Десять", "Пики", 10, '/images/cards/10-bubi.png'));
-            }  
+            }
+            else if ($player->getName() === 'Роман') {
+                $player->takeCard(new Card(0, "Король", "Пики", 10, '/images/cards/king-piki.png'));
+                $player->takeCard(new Card(0, "Туз", "Червы", 11, '/images/cards/ace-hearts.png'));
+                $player->takeCard(new Card(0, "Десять", "Крести", 10, '/images/cards/10-clubs.png'));
+            }
             else if ($player->getName() === 'Оксана') {
                 $player->takeCard(new Card(15, "Валет", "Пики", 10, '/images/cards/valet-clubs.png'));
                 $player->takeCard(new Card(11, "Дама", "Червы", 10, '/images/cards/lady-clubs.png'));
-                $player->takeCard(new Card(18, "Десять", "Крести", 10, '/images/cards/10-bubi.png'));
-            } else {
+                $player->takeCard(new Card(18, "Десять", "Буби", 10, '/images/cards/10-bubi.png'));
+            } else {*/
                 for ($i = 0; $i < self::NUMBER_OF_CARDS_ON_HAND; $i++) {
                     //$rand = random_int(0, count($deck) - 1);
                     $card = $deck[$i];
@@ -38,7 +43,7 @@ class Diller
                     unset($deck[$i]);
                     $deck = array_slice($deck, 0);
                 }
-            }
+            //}
             
         }
     }

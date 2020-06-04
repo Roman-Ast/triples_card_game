@@ -188,7 +188,7 @@ class Round
         $players = Game::getAllPlayers();
 
         foreach ($players as $index => $player) {
-            if ($player == $this->distributor) {
+            if ($player->getId() === $this->distributor->getId()) {
                 $currentDistributorIndex = $index;
             }
         }
@@ -589,8 +589,9 @@ class Round
                 $this->winner = $player;
             }
         }
+        
         //снимаем налог
-        //$this->substractTax();
+        Game::chargeTax();
 
         foreach ($players as $player) {
             if ($player->getId() == $this->winner->getId()) {
@@ -610,9 +611,7 @@ class Round
                 Game::setLastRoundWinner([$player]);
             }
         }
-        //снимаем налог
-        Game::chargeTax();
-        
+
         Game::endCurrentRound();
     }
 
@@ -626,7 +625,7 @@ class Round
         }
 
         //снимаем налог
-        //$this->substractTax();
+        Game::chargeTax();
         
         foreach ($players as $player) {
             if (in_array($player->getId(), $arrOfIdsOfWInners)) {
@@ -647,8 +646,6 @@ class Round
                 $winners[] = $player;
             }
         }
-        //снимаем налог
-        Game::chargeTax();
 
         Game::setLastRoundWinner($winners);
         Game::endCurrentRound();
@@ -661,7 +658,7 @@ class Round
         $this->winner = Game::getLastRoundWinner()[0];
             
         //снимаем налог
-        //$this->substractTax();
+        Game::chargeTax();
 
         foreach ($players as $player) {
             if ($player->getId() == $this->winner->getId()) {
@@ -675,8 +672,6 @@ class Round
                 $userFromDb->save();
             }
         }
-        //снимаем налог
-        Game::chargeTax();
 
         Game::setLastRoundWinner([$this->winner]);
         Game::endCurrentRound();

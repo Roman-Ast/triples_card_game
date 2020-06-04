@@ -61,15 +61,15 @@ class Card
         } else if ($cards[0]->getSuit() === $cards[1]->getSuit()) {
             array_push(
                 $cards, 
-                new Card(21, "Туз", $cards[0]->getSuit(), 11, $cards[0]->getFace())
+                new Card(21, "Туз", $cards[0]->getSuit(), 11, '/images/cards/joker.png')
             );
         } else {
             array_push(
                 $cards, 
-                new Card(21, "Туз", $cards[0]->getSuit(), 11, $cards[0]->getFace())
+                new Card(21, "Туз", $cards[0]->getSuit(), 11, '/images/cards/joker.png')
             );
         }
-
+        var_dump($cards);
         return $cards;
     }
 }

@@ -156,6 +156,22 @@ integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4
         <script src="{{ URL::asset('js/gameEventsHandlers/onAllWinnersAgreeToCook.js') }}" type="module"></script>
         <script src="{{ URL::asset('js/gameEventsHandlers/onSomeNotWinnersAgreeToCook.js') }}" type="module"></script>
         <script type="text/javascript">
+            $('.newBalance').each(function () {
+                if (!$(this).val()) {
+                    $(this).next().attr('disabled', true);
+                    $(this).next().next().next().attr('disabled', true);
+                }
+            });
+
+            $('.newBalance').on('input', function () {
+                if (Number.isInteger(+$(this).val()) && $(this).val()) {
+                    $(this).next().removeAttr('disabled');
+                    $(this).next().next().next().removeAttr('disabled');
+                } else {
+                    $(this).next().attr('disabled', true);
+                    $(this).next().next().next().attr('disabled', true);
+                }
+            });
             const initialInterfaceHeight = $('#myInterface').height();
 
             $('#interfaceUp').on('click', function () {
@@ -252,6 +268,7 @@ integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4
                     });
 
                     $(this).prev().prev().prev().val('');
+                    $(this).attr('disabled', true);
                 });
 
                 $('#passwordGenerate').on('click', function(e) {

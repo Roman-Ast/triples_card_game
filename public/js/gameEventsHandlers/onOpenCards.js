@@ -74,7 +74,8 @@ const onOpenCards = (msgObject, checkingOtherPlayersConnection, playersArrangeme
             container.append(cardsOfPlayer);
         });
     };
-
+    $('#notCooking').removeAttr('disabled');
+    $('#cooking').removeAttr('disabled');
     openCardsForAll(msgObject.allCards, $('#innerFrame'));
     $('#frameForAllPlayersCards').show();
 };
