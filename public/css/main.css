@@ -245,9 +245,7 @@
         justify-content: center;
         max-height: 40%;
     }
-    .card{
-        overflow: hidden;
-    }
+    
     #greeting{
         width: 70%;
         margin: 15% auto;

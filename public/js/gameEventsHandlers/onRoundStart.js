@@ -71,8 +71,8 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
         if (cardsContainer) {
             cardsContainer.appendChild(cardContainer);
         }
-        
     });
+    //$('.card').css({'overflow': 'hidden'});
     
     const isAdmin = $('#isAdmin').text();
     

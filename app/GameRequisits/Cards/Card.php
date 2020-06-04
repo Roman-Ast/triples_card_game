@@ -69,7 +69,7 @@ class Card
                 new Card(21, "Туз", $cards[0]->getSuit(), 11, '/images/cards/joker.png')
             );
         }
-        var_dump($cards);
+        
         return $cards;
     }
 }

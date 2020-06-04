@@ -2,7 +2,6 @@ const showCard = (msgObject) => {
     console.log(msgObject);
 
     $('.playerContainer').each(function () {
-        console.log($(this).attr('ownerName'));
        if ($(this).attr('ownerName') === msgObject.showingPLayer) {
             const showingCardContainer = document.createElement('div');
             showingCardContainer.id = 'showingCardContainer';

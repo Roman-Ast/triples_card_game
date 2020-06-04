@@ -139,8 +139,6 @@ const onMakeBet = (msgObject, checkingOtherPlayersConnection, playersArrangement
         $("#makeBet").attr('disabled', true);
         $('#betSum').prop('disabled', true);
         $('#collate').attr('disabled', true);
-        
-    
     } else {
         $("#save").removeAttr('disabled');
         $("#makeBet").removeAttr('disabled');
@@ -153,8 +151,6 @@ const onMakeBet = (msgObject, checkingOtherPlayersConnection, playersArrangement
             $("#playerBalance").css({'color': 'red'});
         }
     }
-    
-    
 };
 
 export default onMakeBet;
