@@ -62,6 +62,7 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
         const cardContainer = document.createElement("div");
         const img = new Image(96.4, 144.6);
         img.src = card.face;
+        img.id = card.id;
         cardContainer.appendChild(img);
 
         cardContainer.classList.add("card");
@@ -99,6 +100,27 @@ const onRoundStart = (msgObject, checkingOtherPlayersConnection) => {
         audio.src = '/audio/nextStep.mpeg';
         audio.play();
     }
+    let timer = 0;
+    let interval;
+    $('.card').on('touchstart', function (event) {
+        event.preventDefault();
+        interval = setInterval(() => {
+            timer += 1.5;
+            if (timer >= 100) {
+                $('#showCard').attr('cardId', event.target.id);
+                $('#showCard').click();
+                clearInterval(interval);
+                timer = 0;
+            }
+        }, 10);
+        $(this).css({'transform': 'scale(1.1)'});
+    });
+    
+    $('.card').on('touchend', function (event) {
+        $(this).css({'transform': 'scale(1)'});
+        clearInterval(interval);
+        timer = 0;
+    });
 }
 
 export default onRoundStart;

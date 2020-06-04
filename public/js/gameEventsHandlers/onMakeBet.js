@@ -1,5 +1,5 @@
 const onMakeBet = (msgObject, checkingOtherPlayersConnection, playersArrangement) => {
-
+    $('#showingCardContainer').detach();
     const isAdmin = $('#isAdmin').text();
     if (msgObject.nextStepPlayer === $('#playerName').text()) {
         const audio = new Audio();

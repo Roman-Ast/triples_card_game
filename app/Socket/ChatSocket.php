@@ -413,6 +413,28 @@ class ChatSocket extends BaseSocket
             }
         } else if (isset($player_data['stopServer']) && $player_data['stopServer']) {
             Admin::stopServer();
+        } else if (isset($player_data['showCard']) && $player_data['showCard']) {
+            $showingCard = null;
+
+                foreach (Game::getAllPlayers() as $index => $player) {
+                    if ($player->getName() === $player_data['playerName']) {
+                        foreach ($player->getCardsOnHand() as $card) {
+                            if ($card->getId() == $player_data['cardId']) {
+                                $showingCard = $card->getFace();
+                            }
+                        }
+                    }
+                }
+
+                $dataToShowCard = [
+                    'showCard' => true,
+                    'showingCard' => $showingCard,
+                    'showingPLayer' => $player_data['playerName']
+                ];
+
+                foreach ($this->clients as $client) {
+                    $client->send(json_encode($dataToShowCard));
+                }
         }
     }
 

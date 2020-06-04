@@ -215,6 +215,12 @@ class Cooking
         return $this->nextStepPlayer;
     }
 
+    public function getPlayers(): array
+    {
+        
+        return $this->players;
+    }
+
     public function getPlayersNormalized(): array
     {
         $players = [];
@@ -600,7 +606,7 @@ class Cooking
 
         //снимаем налог
         Game::chargeTax();
-        
+
         foreach ($players as $player) {
             if ($player->getId() == $this->winner->getId()) {
                 $userFromDb = User::find($this->winner->getId());

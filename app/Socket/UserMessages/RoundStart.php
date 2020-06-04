@@ -16,7 +16,8 @@ class RoundStart
             $cardsNormalizedForUser[] = [
                 "name" => $card->getName(),
                 "suit" => $card->getSuit(),
-                "face" => $card->getFace()
+                "face" => $card->getFace(),
+                "id" => $card->getId()
             ];
         }
         

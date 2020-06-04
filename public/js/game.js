@@ -12,6 +12,7 @@ import noneNotWinnersAgreedToCook from './gameEventsHandlers/onNoneNotWinnersAgr
 import allWinnersAgreeToCook from './gameEventsHandlers/onAllWinnersAgreeToCook.js';
 import waitingForAllSaid from './gameEventsHandlers/onWaitingForAllSaid.js';
 import chargeNewBalance from './gameEventsHandlers/onChargeNewBalance.js';
+import showCard from './gameEventsHandlers/onShowingCard.js';
 
 const socketUnit = {
     init() {
@@ -28,6 +29,7 @@ const socketUnit = {
         this.notCookingBtn = $('#notCooking');
         this.stopServerBtn = $('#stopServer');
         this.passwordGenerateBtn = $('#passwordGenerate');
+        this.showCardBtn = $('#showCard');
         this.playersArrangement = playersArrangement;
         this.mainFrame = $('#mainFrame');
         this.frameForAllPlayersCardsClose = $('#frameForAllPlayersCardsClose');
@@ -126,6 +128,13 @@ const socketUnit = {
                 stopServer: true
             });
         });
+        this.showCardBtn.bind('click', () => {
+            this.send({
+                showCard: true,
+                playerName: $('#playerName').text(),
+                cardId: this.showCardBtn.attr('cardId')
+            });
+        });
     },
 
     send(objToSend, f = ()=>{}) {
@@ -149,12 +158,13 @@ const socketUnit = {
             allWinnersAgreeToCook,
             waitingForAllSaid,
             chargeNewBalance,
+            showCard,
             reconnect: () => {
                 onRoundStart(msgObject, this.checkingOtherPlayersConnection),
                 onMakeBet(msgObject)
             }
         };
-
+        
         for (const key in msgObject) {
             if (composer.hasOwnProperty(key)) {
                 composer[key](msgObject, this.checkingOtherPlayersConnection, this.playersArrangement)
@@ -239,3 +249,4 @@ $('.nav-item-inactive').on('click', function () {
 
     $(this).css({'color': 'yellow'});
 });
+
